@@ -1,16 +1,20 @@
 package main
 
 import (
-  "net/http"
   "github.com/gin-gonic/gin"
 )
 
+func healthEndpoint(c *gin.Context) {
+    c.JSON(200, gin.H{
+        "message": "pong",
+    })
+}
 func main() {
   server := gin.Default()
-  server.GET("/ping", func(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{
-      "message": "am i..? am i realy alive..?",
-    })
-  })
+  v1 := server.Group("/v1")
+  {
+    v1.GET("/ping", healthEndpoint)
+    v1.GET("/list", ftpListEndpoint)
+  }
   server.Run()
 }
