@@ -6,7 +6,6 @@ require (
 	github.com/containers/common v0.59.0
 	github.com/containers/image/v5 v5.31.0
 	github.com/gin-gonic/gin v1.10.0
-	github.com/spf13/cobra v1.8.0
 )
 
 require (
@@ -45,6 +44,7 @@ require (
 	github.com/opencontainers/runtime-spec v1.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
