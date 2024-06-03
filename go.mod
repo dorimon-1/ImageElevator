@@ -6,6 +6,7 @@ require (
 	github.com/containers/common v0.59.0
 	github.com/containers/image/v5 v5.31.0
 	github.com/gin-gonic/gin v1.10.0
+	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
 )
 
 require (
