@@ -1,36 +1,42 @@
 package main
 
 import (
-    "fmt"
-    "time"
-    "os"
+	"log"
+	"os"
+	"regexp"
+	"time"
 
-    "github.com/secsy/goftp"
-    "github.com/gin-gonic/gin"
-)
-
-const (
-    ftpServerURL = "localhost"
-    ftpServerPath = "/home/kj"
+	"github.com/gin-gonic/gin"
+	"github.com/secsy/goftp"
 )
 
 func ftpListEndpoint(c *gin.Context) {
-    config := goftp.Config {
-      User:               "kj",
-      Password:           "1",
-      ConnectionsPerHost: 10,
-      Timeout:            10 * time.Second,
-      Logger:             os.Stdout,
-    }
-    client, err := goftp.DialConfig(config,ftpServerURL)
-    if err != nil {
-        panic(err)
-    }
-    files, err := client.ReadDir(ftpServerPath)
-    if err != nil {
-        panic(err)
-    }
-    for _, file := range files {
-        fmt.Println(file.Name())
-    }
+	ftpConfig := goftp.Config{
+		User:               config.FtpUsername,
+		Password:           config.FtpPassword,
+		ConnectionsPerHost: 10,
+		Timeout:            10 * time.Second,
+		Logger:             os.Stdout,
+	}
+
+	client, err := goftp.DialConfig(ftpConfig, config.FtpServerPath)
+	if err != nil {
+		panic(err)
+	}
+
+	files, err := client.ReadDir(config.FtpServerPath)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range files {
+		matched, err := regexp.MatchString("^int-", file.Name())
+		if err != nil {
+			panic(err)
+		}
+
+		if matched {
+			log.Printf("Found file: %s", file.Name())
+		}
+	}
 }
