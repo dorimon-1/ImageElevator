@@ -1,4 +1,4 @@
-module github.com/Kjone1/spacecraft
+module github.com/Kjone1/imageElevator
 
 go 1.22.3
 
