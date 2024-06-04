@@ -10,7 +10,7 @@ import (
 	"github.com/secsy/goftp"
 )
 
-func ftpConnect() *goftp.Client {
+func ftpConnect() (*goftp.Client, error) {
 
 	ftpConfig := goftp.Config{
 		User:               config.FtpUsername,
@@ -22,17 +22,21 @@ func ftpConnect() *goftp.Client {
 
 	client, err := goftp.DialConfig(ftpConfig, config.FtpServerURL)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return client
+	return client, nil
 }
 
 func ftpListEndpoint(c *gin.Context) {
-	client := ftpConnect()
-
+	client, err := ftpConnect()
+	if err != nil {
+		log.Printf("Failed to create FTP client with error => %s", err)
+		return
+	}
 	files, err := client.ReadDir(config.FtpServerPath)
 	if err != nil {
 		log.Printf("Reading FTP directory failed with error => %s", err)
+		return
 	}
 
 	for _, file := range files {
