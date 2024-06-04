@@ -10,7 +10,8 @@ import (
 	"github.com/secsy/goftp"
 )
 
-func ftpListEndpoint(c *gin.Context) {
+func ftpConnect() (*goftp.Client, error) {
+
 	ftpConfig := goftp.Config{
 		User:               config.FtpUsername,
 		Password:           config.FtpPassword,
@@ -19,20 +20,30 @@ func ftpListEndpoint(c *gin.Context) {
 		Logger:             os.Stdout,
 	}
 
-	client, err := goftp.DialConfig(ftpConfig, config.FtpServerPath)
+	client, err := goftp.DialConfig(ftpConfig, config.FtpServerURL)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	return client, nil
+}
 
+func ftpListEndpoint(c *gin.Context) {
+	client, err := ftpConnect()
+	if err != nil {
+		log.Printf("Failed to create FTP client with error => %s", err)
+		return
+	}
 	files, err := client.ReadDir(config.FtpServerPath)
 	if err != nil {
-		panic(err)
+		log.Printf("Reading FTP directory failed with error => %s", err)
+		return
 	}
 
 	for _, file := range files {
-		matched, err := regexp.MatchString("^int-", file.Name())
+		pattern := "^int-"
+		matched, err := regexp.MatchString(pattern, file.Name())
 		if err != nil {
-			panic(err)
+			log.Printf("Failed while matching %s againts regex pattern '%s' with error => %s", file.Name(), pattern, err)
 		}
 
 		if matched {
