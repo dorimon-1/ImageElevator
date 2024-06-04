@@ -40,9 +40,10 @@ func ftpListEndpoint(c *gin.Context) {
 	}
 
 	for _, file := range files {
-		matched, err := regexp.MatchString("^int-", file.Name())
+		pattern := "^int-"
+		matched, err := regexp.MatchString(pattern, file.Name())
 		if err != nil {
-			log.Printf("Failed to match file name againts regex with error => %s", err)
+			log.Printf("Failed while matching %s againts regex pattern '%s' with error => %s", file.Name(), pattern, err)
 		}
 
 		if matched {
