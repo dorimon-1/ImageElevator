@@ -19,7 +19,7 @@ func ftpListEndpoint(c *gin.Context) {
 		Logger:             os.Stdout,
 	}
 
-	client, err := goftp.DialConfig(ftpConfig, config.FtpServerPath)
+	client, err := goftp.DialConfig(ftpConfig, config.FtpServerURL)
 	if err != nil {
 		panic(err)
 	}
