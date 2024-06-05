@@ -29,6 +29,8 @@ func ftpConnect() (*FtpClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	return client, nil
+}
 
 	return &FtpClient{FtpClient: client}, nil
 }
