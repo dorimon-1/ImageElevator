@@ -5,6 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func init() {
+	LoadConfig()
+}
+
 func main() {
 	server := gin.Default()
 
