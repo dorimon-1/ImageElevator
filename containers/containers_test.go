@@ -20,13 +20,12 @@ func TestPush(t *testing.T) {
 	if err := containers.PushTar(tarPath, imageName, tag, containerConfig); err != nil {
 		t.Errorf("failed pushing: %v", err)
 	}
-
 }
 
-func TestLogin(t *testing.T) {
+func TestCheckAuth(t *testing.T) {
 	config.LoadConfig()
 	containerConfig := config.Config.ContainerConfig
-	_, err := containers.Login(containerConfig.Registry, containerConfig.Repository, imageName, tag)
+	err := containers.CheckAuth(containerConfig)
 	if err != nil {
 		t.Errorf("failed: %v", err)
 	}

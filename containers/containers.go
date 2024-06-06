@@ -12,7 +12,6 @@ import (
 	"github.com/containers/image/v5/types"
 )
 
-// CheckAuth is used to check authentication only to DockerHub
 func CheckAuth(config *config.ContainerConfig) error {
 	return docker.CheckAuth(
 		context.Background(),
@@ -21,10 +20,6 @@ func CheckAuth(config *config.ContainerConfig) error {
 		config.SystemContext.DockerAuthConfig.Password,
 		config.Registry,
 	)
-}
-
-func Login(registry, repository, imageName, tag string) (types.ImageReference, error) {
-	return parseDocker(registry, repository, imageName, tag)
 }
 
 func PushTar(tarPath, imageName, tag string, config *config.ContainerConfig) error {
@@ -64,8 +59,8 @@ func parseTar(path string) (types.ImageReference, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parsing %s to image name: %s", path, err)
 	}
-	return ref, nil
 
+	return ref, nil
 }
 
 func parseDocker(registry, repository, imageName, tag string) (types.ImageReference, error) {
@@ -73,5 +68,6 @@ func parseDocker(registry, repository, imageName, tag string) (types.ImageRefere
 	if err != nil {
 		return nil, fmt.Errorf("parsing repository on login: %s", err)
 	}
+
 	return ref, nil
 }
