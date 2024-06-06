@@ -34,15 +34,16 @@ func ftpConnect() (*FtpClient, error) {
 
 func ftpPull(client *FtpClient, files []string) {
 	for _, file := range files {
-		path := fmt.Sprintf("%s/%s", config.FtpServerPath, file)
-		log.Printf("Pulling file: %s", path)
 
-		file, err := os.Create(file)
+		log.Printf("Pulling file: %s", file)
+
+		buffer, err := os.Create(file)
 		if err != nil {
 			log.Printf("Failed to create file with error => %s", err)
 			return
 		}
-		err = client.FtpClient.Retrieve(path, file)
+		path := fmt.Sprintf("%s/%s", config.FtpServerPath, file)
+		err = client.FtpClient.Retrieve(path, buffer)
 		if err != nil {
 			log.Printf("Failed to retreive file with error => %s", err)
 		}
