@@ -8,7 +8,11 @@ import (
 )
 
 func FtpSync(c *gin.Context) {
-	client := ftp.Client()
+	client, err := ftp.Client()
+	if err != nil {
+		log.Printf("Unable to create FTP client with error => %s", err)
+		return
+	}
 	images, err := ftp.List(client)
 	if err != nil {
 		log.Printf("Reading FTP directory failed with error => %s", err)

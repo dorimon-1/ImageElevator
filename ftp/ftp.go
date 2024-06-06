@@ -16,14 +16,15 @@ type FtpClient struct {
 
 var client *FtpClient
 
-func Client() *FtpClient {
+func Client() (*FtpClient, error) {
 	if client == nil {
 		ftpClient, err := Connect()
 		if err != nil {
-			client = ftpClient
+			return nil, err
 		}
+		client = ftpClient
 	}
-	return client
+	return client, nil
 }
 func Connect() (*FtpClient, error) {
 
