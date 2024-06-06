@@ -7,11 +7,13 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/Kjone1/imageElevator/config"
 	"github.com/secsy/goftp"
 )
 
 type FtpClient struct {
-	FtpClient *goftp.Client
+	Client *goftp.Client
+	Config *config.FtpConfig
 }
 
 var client *FtpClient
@@ -26,7 +28,9 @@ func Client() (*FtpClient, error) {
 	}
 	return client, nil
 }
+
 func Connect() (*FtpClient, error) {
+	config := config.Config.FtpConfig
 
 	ftpConfig := goftp.Config{
 		User:               config.FtpUsername,
@@ -40,7 +44,7 @@ func Connect() (*FtpClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &FtpClient{FtpClient: client}, nil
+	return &FtpClient{Client: client, Config: config}, nil
 }
 
 func Pull(client *FtpClient, files []string) {
@@ -53,15 +57,16 @@ func Pull(client *FtpClient, files []string) {
 			log.Printf("Failed to create file with error => %s", err)
 			return
 		}
-		path := fmt.Sprintf("%s/%s", config.FtpServerPath, file)
-		err = client.FtpClient.Retrieve(path, buffer)
+		path := fmt.Sprintf("%s/%s", client.Config.FtpServerPath, file)
+		err = client.Client.Retrieve(path, buffer)
 		if err != nil {
 			log.Printf("Failed to retreive file with error => %s", err)
 		}
 	}
 }
+
 func List(client *FtpClient) ([]string, error) {
-	files, err := client.FtpClient.ReadDir(config.FtpServerPath)
+	files, err := client.Client.ReadDir(client.Config.FtpServerPath)
 	if err != nil {
 		return nil, err
 	}

@@ -6,16 +6,17 @@ import (
 	"os"
 
 	"github.com/containers/image/v5/types"
+	"github.com/joho/godotenv"
 )
 
 type ServerConfig struct {
-	*FtpConfig
-	*ContainerConfig
+	FtpConfig       *FtpConfig
+	ContainerConfig *ContainerConfig
 }
 
 type ContainerConfig struct {
 	Registry      string
-	RepoURL       string
+	Repository    string
 	SystemContext *types.SystemContext
 }
 
@@ -26,34 +27,30 @@ type FtpConfig struct {
 	FtpPassword   string
 }
 
-var config *ServerConfig
+var Config *ServerConfig
 
-func init() {
-	config = readConfig()
-}
+func LoadConfig() {
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Fatalf("failed reading dotenv: %s", err)
+	}
 
-func Config() *ServerConfig {
-	return config
-}
-
-func readConfig() *ServerConfig {
 	ftpConfig := readFtpConfig()
 	containersConfig := readContainersConfig()
 
-	return &ServerConfig{
+	Config = &ServerConfig{
 		FtpConfig:       ftpConfig,
 		ContainerConfig: containersConfig,
 	}
 }
 
 func readFtpConfig() *FtpConfig {
-	ftpServerURL, err := readEnv("FTP_SERVER_URL")
+	ftpServerURL, err := ReadEnv("FTP_SERVER_URL")
 	if err != nil {
 	}
 
-	ftpServerPath := readEnvWithDefault("FTP_SERVER_PATH", "/")
-	ftpUsername := readEnvWithDefault("FTP_USERNAME", "ftpuser")
-	ftpPassword := readEnvWithDefault("FTP_PASSWORD", "ftpuser")
+	ftpServerPath := ReadEnvWithDefault("FTP_SERVER_PATH", "/")
+	ftpUsername := ReadEnvWithDefault("FTP_USERNAME", "ftpuser")
+	ftpPassword := ReadEnvWithDefault("FTP_PASSWORD", "ftpuser")
 
 	return &FtpConfig{
 		FtpServerURL:  ftpServerURL,
@@ -64,45 +61,46 @@ func readFtpConfig() *FtpConfig {
 }
 
 func readContainersConfig() *ContainerConfig {
-	repoURL, err := readEnv("REPO_URL")
+	repo, err := ReadEnv("REPOSITORY")
 	if err != nil {
 	}
 
-	registry, err := readEnv("REGISTRY")
+	registry, err := ReadEnv("REGISTRY")
 	if err != nil {
 	}
 
 	dockerAuthConfig := &types.DockerAuthConfig{
-		Username: readEnvWithDefault("REPO_USERNAME", "admin"),
-		Password: readEnvWithDefault("REPO_PASSWORD", "admin"),
+		Username: ReadEnvWithDefault("REPO_USERNAME", "repoUser"),
+		Password: ReadEnvWithDefault("REPO_PASSWORD", "repoPass"),
 	}
 
 	return &ContainerConfig{
-		RepoURL:  repoURL,
-		Registry: registry,
+		Repository: repo,
+		Registry:   registry,
 		SystemContext: &types.SystemContext{
 			DockerAuthConfig:          dockerAuthConfig,
-			DockerCertPath:            readEnvWithDefault("DOCKER_CERT_PATH", ""),
-			DockerBearerRegistryToken: readEnvWithDefault("REGISTRY_BEARER_TOKEN", ""),
+			DockerCertPath:            ReadEnvWithDefault("DOCKER_CERT_PATH", ""),
+			DockerBearerRegistryToken: ReadEnvWithDefault("REGISTRY_BEARER_TOKEN", ""),
 		},
 	}
 }
-
-func readEnvWithDefault(key string, defaultValue string) string {
+func ReadEnvWithDefault(key string, defaultValue string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		value = defaultValue
 		log.Printf("%s environment variable not set, using default: %s", key, defaultValue)
+		return defaultValue
 	}
 
+	log.Printf("Loaded %s=%s", key, value)
 	return value
 }
 
-func readEnv(key string) (string, error) {
+func ReadEnv(key string) (string, error) {
 	value := os.Getenv(key)
 	if value == "" {
 		return "", fmt.Errorf("%s environment variable is not defined", key)
 	}
 
+	log.Printf("Loaded %s=%s", key, value)
 	return value, nil
 }

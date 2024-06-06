@@ -5,30 +5,16 @@ import (
 
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/containers"
-	"github.com/containers/image/v5/types"
 )
 
 const (
-	username  = "dorsahar@icloud.com"
-	password  = "dor4420!@"
-	repo      = "docker.io/dor4420"
+	tag       = "3"
 	imageName = "dor4420"
-	tag       = "1"
-	registry  = "docker.io"
 )
 
-var containerConfig *config.ContainerConfig = &config.ContainerConfig{
-	Registry: registry,
-	RepoURL:  repo,
-	SystemContext: &types.SystemContext{
-		DockerAuthConfig: &types.DockerAuthConfig{
-			Username: username,
-			Password: password,
-		},
-	},
-}
-
 func TestPush(t *testing.T) {
+	config.LoadConfig()
+	containerConfig := config.Config.ContainerConfig
 	tarPath := "../alpine.tar"
 
 	if err := containers.PushTar(tarPath, imageName, tag, containerConfig); err != nil {
@@ -38,7 +24,9 @@ func TestPush(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	_, err := containers.Login(repo, imageName, tag)
+	config.LoadConfig()
+	containerConfig := config.Config.ContainerConfig
+	_, err := containers.Login(containerConfig.Registry, containerConfig.Repository, imageName, tag)
 	if err != nil {
 		t.Errorf("failed: %v", err)
 	}

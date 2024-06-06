@@ -1,12 +1,13 @@
 package main
 
 import (
+	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/endpoints"
 	"github.com/gin-gonic/gin"
 )
 
 func init() {
-	LoadConfig()
+	config.LoadConfig()
 }
 
 func main() {
