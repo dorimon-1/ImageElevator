@@ -23,12 +23,12 @@ func CheckAuth(config *config.ContainerConfig) error {
 	)
 }
 
-func Login(repository, tag string) (types.ImageReference, error) {
-	return parseDocker(repository, tag)
+func Login(repository, imageName, tag string) (types.ImageReference, error) {
+	return parseDocker(repository, imageName, tag)
 }
 
-func PushTar(tarPath, tag string, config *config.ContainerConfig) error {
-	dstRef, err := parseDocker(config.RepoURL, tag)
+func PushTar(tarPath, imageName, tag string, config *config.ContainerConfig) error {
+	dstRef, err := parseDocker(config.RepoURL, imageName, tag)
 	if err != nil {
 		return err
 	}
@@ -68,8 +68,8 @@ func parseTar(path string) (types.ImageReference, error) {
 
 }
 
-func parseDocker(repository, tag string) (types.ImageReference, error) {
-	ref, err := alltransports.ParseImageName(fmt.Sprintf("docker://%s:%s", repository, tag))
+func parseDocker(repository, imageName, tag string) (types.ImageReference, error) {
+	ref, err := alltransports.ParseImageName(fmt.Sprintf("docker://%s/%s:%s", repository, imageName, tag))
 	if err != nil {
 		return nil, fmt.Errorf("parsing repository on login: %s", err)
 	}

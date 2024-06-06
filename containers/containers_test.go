@@ -9,10 +9,12 @@ import (
 )
 
 const (
-	username = "*******************"
-	password = "*********"
-	repo     = "docker.io/dor4420/alpine"
-	registry = "docker.io"
+	username  = "dorsahar@icloud.com"
+	password  = "dor4420!@"
+	repo      = "docker.io/dor4420"
+	imageName = "dor4420"
+	tag       = "1"
+	registry  = "docker.io"
 )
 
 var containerConfig *config.ContainerConfig = &config.ContainerConfig{
@@ -27,16 +29,16 @@ var containerConfig *config.ContainerConfig = &config.ContainerConfig{
 }
 
 func TestPush(t *testing.T) {
-	tarPath := "/home/dor/dev/ImageElevator/alpine.tar"
+	tarPath := "../alpine.tar"
 
-	if err := containers.PushTar(tarPath, "33", containerConfig); err != nil {
+	if err := containers.PushTar(tarPath, imageName, tag, containerConfig); err != nil {
 		t.Errorf("failed pushing: %v", err)
 	}
 
 }
 
 func TestLogin(t *testing.T) {
-	_, err := containers.Login(repo, "33")
+	_, err := containers.Login(repo, imageName, tag)
 	if err != nil {
 		t.Errorf("failed: %v", err)
 	}
