@@ -1,4 +1,4 @@
-package main
+package ftp
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/secsy/goftp"
 )
 
@@ -15,7 +14,18 @@ type FtpClient struct {
 	FtpClient *goftp.Client
 }
 
-func ftpConnect() (*FtpClient, error) {
+var client *FtpClient
+
+func Client() *FtpClient {
+	if client == nil {
+		ftpClient, err := Connect()
+		if err != nil {
+			client = ftpClient
+		}
+	}
+	return client
+}
+func Connect() (*FtpClient, error) {
 
 	ftpConfig := goftp.Config{
 		User:               config.FtpUsername,
@@ -32,7 +42,7 @@ func ftpConnect() (*FtpClient, error) {
 	return &FtpClient{FtpClient: client}, nil
 }
 
-func ftpPull(client *FtpClient, files []string) {
+func Pull(client *FtpClient, files []string) {
 	for _, file := range files {
 
 		log.Printf("Pulling file: %s", file)
@@ -49,7 +59,7 @@ func ftpPull(client *FtpClient, files []string) {
 		}
 	}
 }
-func ftpList(client *FtpClient) ([]string, error) {
+func List(client *FtpClient) ([]string, error) {
 	files, err := client.FtpClient.ReadDir(config.FtpServerPath)
 	if err != nil {
 		return nil, err
@@ -68,16 +78,4 @@ func ftpList(client *FtpClient) ([]string, error) {
 		}
 	}
 	return files_found, nil
-}
-func (client *FtpClient) ftpListEndpoint(c *gin.Context) {
-	images, err := ftpList(client)
-	if err != nil {
-		log.Printf("Reading FTP directory failed with error => %s", err)
-		return
-	}
-	if images == nil {
-		log.Printf("No new images were found")
-		return
-	}
-	ftpPull(client, images)
 }
