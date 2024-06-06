@@ -31,7 +31,7 @@ var Config *ServerConfig
 
 func LoadConfig() {
 	if err := godotenv.Load("../.env"); err != nil {
-		log.Fatalf("failed reading dotenv: %s", err)
+		log.Printf("failed reading dotenv: %s", err)
 	}
 
 	ftpConfig := readFtpConfig()
@@ -46,6 +46,7 @@ func LoadConfig() {
 func readFtpConfig() *FtpConfig {
 	ftpServerURL, err := ReadEnv("FTP_SERVER_URL")
 	if err != nil {
+		log.Printf("failed to load FTP_SERVER_URL")
 	}
 
 	ftpServerPath := ReadEnvWithDefault("FTP_SERVER_PATH", "/")
@@ -63,10 +64,12 @@ func readFtpConfig() *FtpConfig {
 func readContainersConfig() *ContainerConfig {
 	repo, err := ReadEnv("REPOSITORY")
 	if err != nil {
+		log.Printf("failed to load REPOSITORY")
 	}
 
 	registry, err := ReadEnv("REGISTRY")
 	if err != nil {
+		log.Printf("failed to load REGISTRY")
 	}
 
 	dockerAuthConfig := &types.DockerAuthConfig{
