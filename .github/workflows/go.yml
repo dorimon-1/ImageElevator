@@ -9,16 +9,16 @@ on:
   pull_request:
     branches: [ "master" ]
 
-env:
-  REGISTRY=docker.io
-  REPOSITORY=dor4420
-  REPO_USERNAME=${{secrets.REPO_USERNAME}}
-  REPO_PASSWORD=${{secrets.REPO_PASSWORD}}
-
 jobs:
-
   build:
     runs-on: ubuntu-latest
+
+    env:
+      REGISTRY: docker.io
+      REPOSITORY: dor4420
+      REPO_USERNAME: ${{ secrets.REPO_USERNAME }}
+      REPO_PASSWORD: ${{ secrets.REPO_PASSWORD }}
+
     steps:
     - uses: actions/checkout@v4
 
