@@ -10,17 +10,15 @@ on:
     branches: [ "master" ]
 
 jobs:
-
-  lint:
+  golangci:
+    name: lint
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{matrix.go-version}}
-
-      - uses: actions/checkout@v4
-
+          go-version: stable
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.59.0
+          version: v1.59
