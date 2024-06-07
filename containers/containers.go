@@ -22,6 +22,24 @@ func CheckAuth(config *config.ContainerConfiguation) error {
 	)
 }
 
+func Pull(config *config.ContainerConfiguation, image, tag, targetPath string) error {
+	imgRef, err := parseDocker(config.Registry, config.Repository, image, tag)
+	if err != nil {
+		return err
+	}
+
+	dstRef, err := parseTar(fmt.Sprintf("%s/%s-%s", targetPath, image, tag))
+	if err != nil {
+		return err
+	}
+
+	if err := copyImage(imgRef, dstRef, config.SystemContext); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func PushTar(tarPath, imageName, tag string, config *config.ContainerConfiguation) error {
 	dstRef, err := parseDocker(config.Registry, config.Repository, imageName, tag)
 	if err != nil {
@@ -33,22 +51,8 @@ func PushTar(tarPath, imageName, tag string, config *config.ContainerConfiguatio
 		return err
 	}
 
-	policyCtx, err := signature.NewPolicyContext(&signature.Policy{
-		Default: []signature.PolicyRequirement{
-			signature.NewPRInsecureAcceptAnything(),
-		},
-	})
-	if err != nil {
+	if err := copyImage(srcRef, dstRef, config.SystemContext); err != nil {
 		return err
-	}
-
-	defer func() { _ = policyCtx.Destroy() }()
-
-	if _, err := copy.Image(context.Background(), policyCtx, dstRef, srcRef, &copy.Options{
-		DestinationCtx: config.SystemContext,
-		SourceCtx:      config.SystemContext,
-	}); err != nil {
-		return fmt.Errorf("coping source image to destination repository: %s", err)
 	}
 
 	return nil
@@ -70,4 +74,24 @@ func parseDocker(registry, repository, imageName, tag string) (types.ImageRefere
 	}
 
 	return ref, nil
+}
+
+func copyImage(srcRef, dstRef types.ImageReference, sysCtx *types.SystemContext) error {
+	policyCtx, err := signature.NewPolicyContext(&signature.Policy{
+		Default: []signature.PolicyRequirement{
+			signature.NewPRInsecureAcceptAnything(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = policyCtx.Destroy() }()
+
+	_, err = copy.Image(context.Background(), policyCtx, dstRef, srcRef, &copy.Options{
+		SourceCtx:      sysCtx,
+		DestinationCtx: sysCtx,
+	})
+
+	return err
 }
