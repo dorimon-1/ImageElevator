@@ -7,11 +7,13 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/Kjone1/imageElevator/config"
 	"github.com/secsy/goftp"
 )
 
 type FtpClient struct {
-	FtpClient *goftp.Client
+	*goftp.Client
+	*config.FtpConfiguration
 }
 
 var client *FtpClient
@@ -26,7 +28,9 @@ func Client() (*FtpClient, error) {
 	}
 	return client, nil
 }
+
 func Connect() (*FtpClient, error) {
+	config := config.FtpConfig()
 
 	ftpConfig := goftp.Config{
 		User:               config.FtpUsername,
@@ -40,7 +44,8 @@ func Connect() (*FtpClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &FtpClient{FtpClient: client}, nil
+
+	return &FtpClient{Client: client, FtpConfiguration: &config}, nil
 }
 
 func Pull(client *FtpClient, files []string) {
@@ -53,25 +58,31 @@ func Pull(client *FtpClient, files []string) {
 			log.Printf("Failed to create file with error => %s", err)
 			return
 		}
-		path := fmt.Sprintf("%s/%s", config.FtpServerPath, file)
-		err = client.FtpClient.Retrieve(path, buffer)
+		path := fmt.Sprintf("%s/%s", client.FtpServerPath, file)
+		err = client.Retrieve(path, buffer)
 		if err != nil {
 			log.Printf("Failed to retreive file with error => %s", err)
 		}
 	}
 }
+
 func List(client *FtpClient) ([]string, error) {
-	files, err := client.FtpClient.ReadDir(config.FtpServerPath)
+	files, err := client.ReadDir(client.FtpServerPath)
 	if err != nil {
 		return nil, err
 	}
+
 	var files_found []string
+
+	//TODO: make pattern an environement variable
+	pattern := "^int-.*-docker$"
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("building regex: %s", err)
+	}
+
 	for _, file := range files {
-		pattern := "^int-.*-docker$"
-		matched, err := regexp.MatchString(pattern, file.Name())
-		if err != nil {
-			log.Printf("Failed while matching %s againts regex pattern '%s' with error => %s", file.Name(), pattern, err)
-		}
+		matched := regex.MatchString(file.Name())
 
 		if matched {
 			log.Printf("Found file: %s", file.Name())
