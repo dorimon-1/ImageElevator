@@ -11,14 +11,21 @@ on:
 
 jobs:
   golangci:
-    name: lint
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: stable
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.59
+    - uses: actions/checkout@v4
+
+    - name: 🚀 Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22.3'
+
+    - name: ⚙️ Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y
+        sudo apt-get install golangci-lint -y
+        
+    - name: ⚙️ Lint
+      run: golangci-lint run
