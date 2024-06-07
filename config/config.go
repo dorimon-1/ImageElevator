@@ -46,8 +46,8 @@ func LoadConfig() {
 		log.Printf("failed reading dotenv: %s", err)
 	}
 
-	ftpConfig = readFtpConfig()
-	containersConfig = readContainersConfig()
+	FtpConfig()
+	ContainersConfig()
 }
 
 func readFtpConfig() *FtpConfiguration {
