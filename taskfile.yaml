@@ -1,0 +1,31 @@
+version: '3'
+
+silent: true
+
+tasks:
+  default:
+    desc: Runs 'task help'
+    cmds:
+      - go-task help
+
+  help:
+    desc: Display this help.
+    cmds:
+      - go-task -a
+
+  dev:
+    desc: Run in dev mode with hot reloading.
+    cmds:
+      - air
+
+  run:
+    desc: Run in production mode
+    env:
+      GIN_MODE: release
+    cmds:
+      - go run main.go
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - go test -v ./...
