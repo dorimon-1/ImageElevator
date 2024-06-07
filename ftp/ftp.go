@@ -13,7 +13,7 @@ import (
 
 type FtpClient struct {
 	*goftp.Client
-	*config.FtpConfig
+	*config.FtpConfiguration
 }
 
 var client *FtpClient
@@ -30,7 +30,7 @@ func Client() (*FtpClient, error) {
 }
 
 func Connect() (*FtpClient, error) {
-	config := config.Config.FtpConfig
+	config := config.FtpConfig()
 
 	ftpConfig := goftp.Config{
 		User:               config.FtpUsername,
@@ -44,7 +44,8 @@ func Connect() (*FtpClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &FtpClient{Client: client, FtpConfig: config}, nil
+
+	return &FtpClient{Client: client, FtpConfiguration: &config}, nil
 }
 
 func Pull(client *FtpClient, files []string) {

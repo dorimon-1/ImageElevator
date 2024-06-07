@@ -12,7 +12,7 @@ import (
 	"github.com/containers/image/v5/types"
 )
 
-func CheckAuth(config *config.ContainerConfig) error {
+func CheckAuth(config *config.ContainerConfiguation) error {
 	return docker.CheckAuth(
 		context.Background(),
 		config.SystemContext,
@@ -22,7 +22,7 @@ func CheckAuth(config *config.ContainerConfig) error {
 	)
 }
 
-func PushTar(tarPath, imageName, tag string, config *config.ContainerConfig) error {
+func PushTar(tarPath, imageName, tag string, config *config.ContainerConfiguation) error {
 	dstRef, err := parseDocker(config.Registry, config.Repository, imageName, tag)
 	if err != nil {
 		return err

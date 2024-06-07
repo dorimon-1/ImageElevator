@@ -13,21 +13,17 @@ const (
 )
 
 func TestPush(t *testing.T) {
-	config.LoadConfig()
-	containerConfig := config.Config.ContainerConfig
+	containerConfig := config.ContainersConfig()
 	tarPath := "../alpine.tar"
 
-	if err := containers.PushTar(tarPath, imageName, tag, containerConfig); err != nil {
+	if err := containers.PushTar(tarPath, imageName, tag, &containerConfig); err != nil {
 		t.Errorf("failed pushing: %v", err)
 	}
 }
 
 func TestCheckAuth(t *testing.T) {
-	config.LoadConfig()
-	containerConfig := config.Config.ContainerConfig
-	err := containers.CheckAuth(containerConfig)
-	if err != nil {
+	containerConfig := config.ContainersConfig()
+	if err := containers.CheckAuth(&containerConfig); err != nil {
 		t.Errorf("failed: %v", err)
 	}
-
 }

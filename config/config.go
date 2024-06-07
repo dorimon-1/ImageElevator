@@ -9,41 +9,48 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type ServerConfig struct {
-	FtpConfig       *FtpConfig
-	ContainerConfig *ContainerConfig
-}
-
-type ContainerConfig struct {
+type ContainerConfiguation struct {
 	Registry      string
 	Repository    string
 	SystemContext *types.SystemContext
 }
 
-type FtpConfig struct {
+type FtpConfiguration struct {
 	FtpServerURL  string
 	FtpServerPath string
 	FtpUsername   string
 	FtpPassword   string
 }
 
-var Config *ServerConfig
+var ftpConfig *FtpConfiguration
+var containersConfig *ContainerConfiguation
+
+func FtpConfig() FtpConfiguration {
+	if ftpConfig == nil {
+		ftpConfig = readFtpConfig()
+	}
+
+	return *ftpConfig
+}
+
+func ContainersConfig() ContainerConfiguation {
+	if containersConfig == nil {
+		ftpConfig = readFtpConfig()
+	}
+
+	return *containersConfig
+}
 
 func LoadConfig() {
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Printf("failed reading dotenv: %s", err)
 	}
 
-	ftpConfig := readFtpConfig()
-	containersConfig := readContainersConfig()
-
-	Config = &ServerConfig{
-		FtpConfig:       ftpConfig,
-		ContainerConfig: containersConfig,
-	}
+	ftpConfig = readFtpConfig()
+	containersConfig = readContainersConfig()
 }
 
-func readFtpConfig() *FtpConfig {
+func readFtpConfig() *FtpConfiguration {
 	ftpServerURL, err := ReadEnv("FTP_SERVER_URL")
 	if err != nil {
 		log.Printf("failed to load FTP_SERVER_URL")
@@ -53,7 +60,7 @@ func readFtpConfig() *FtpConfig {
 	ftpUsername := ReadEnvWithDefault("FTP_USERNAME", "ftpuser")
 	ftpPassword := ReadEnvWithDefault("FTP_PASSWORD", "ftpuser")
 
-	return &FtpConfig{
+	return &FtpConfiguration{
 		FtpServerURL:  ftpServerURL,
 		FtpServerPath: ftpServerPath,
 		FtpUsername:   ftpUsername,
@@ -61,15 +68,15 @@ func readFtpConfig() *FtpConfig {
 	}
 }
 
-func readContainersConfig() *ContainerConfig {
-	repo, err := ReadEnv("REPOSITORY")
-	if err != nil {
-		log.Printf("failed to load REPOSITORY")
-	}
-
+func readContainersConfig() *ContainerConfiguation {
 	registry, err := ReadEnv("REGISTRY")
 	if err != nil {
-		log.Printf("failed to load REGISTRY")
+		log.Fatalf("failed to load REGISTRY")
+	}
+
+	repo, err := ReadEnv("REPOSITORY")
+	if err != nil {
+		log.Fatalf("failed to load REPOSITORY")
 	}
 
 	dockerAuthConfig := &types.DockerAuthConfig{
@@ -77,7 +84,7 @@ func readContainersConfig() *ContainerConfig {
 		Password: ReadEnvWithDefault("REPO_PASSWORD", "repoPass"),
 	}
 
-	return &ContainerConfig{
+	return &ContainerConfiguation{
 		Repository: repo,
 		Registry:   registry,
 		SystemContext: &types.SystemContext{
