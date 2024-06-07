@@ -8,11 +8,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func LoadConfig() {
+func init() {
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Printf("failed reading dotenv: %s", err)
 	}
+}
 
+func LoadConfig() {
 	FtpConfig()
 	ContainersConfig()
 }
