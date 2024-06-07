@@ -35,7 +35,7 @@ func FtpConfig() FtpConfiguration {
 
 func ContainersConfig() ContainerConfiguation {
 	if containersConfig == nil {
-		ftpConfig = readFtpConfig()
+		containersConfig = readContainersConfig()
 	}
 
 	return *containersConfig
