@@ -4,28 +4,51 @@ silent: true
 
 tasks:
   default:
-    desc: Runs 'task help'
+    desc: Runs 'task help'.
     cmds:
-      - go-task help
+      - task help
 
   help:
-    desc: Display this help.
+    desc: Display this help msg.
     cmds:
-      - go-task -a
+      - task -a
 
   dev:
     desc: Run in dev mode with hot reloading.
     cmds:
       - air
 
+  external_deps:
+    desc: Download external project dependencies.
+    platforms:
+      - linux
+    internal: true
+    cmds:
+      - sudo apt-get update
+      - sudo apt-get install -y
+      - sudo apt-get install libbtrfs-dev -y
+      - sudo apt-get install libgpgme-dev -y
+
+  setup:
+    desc: Download project dependencies.
+    deps:
+      - external_deps
+    cmds:
+      - go mod tidy
+
   run:
-    desc: Run in production mode
+    desc: Run in production mode.
     env:
       GIN_MODE: release
     cmds:
       - go run main.go
 
+  build:
+    desc: Build binary.
+    cmds:
+      - go build .
+
   test:
-    desc: Run unit tests
+    desc: Run unit tests.
     cmds:
       - go test -v ./...
