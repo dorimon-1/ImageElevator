@@ -26,6 +26,7 @@ jobs:
 
       - name: ⚙️ Install dependencies
         run: |
+          go mod init
           sudo apt-get update
           sudo apt-get install -y
           sudo apt-get install libbtrfs-dev -y
