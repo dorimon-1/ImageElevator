@@ -6,15 +6,15 @@ import (
 	"github.com/containers/image/v5/types"
 )
 
-type ContainerConfiguation struct {
+type DockerConfiguration struct {
 	Registry      string
 	Repository    string
 	SystemContext *types.SystemContext
 }
 
-var containersConfig *ContainerConfiguation
+var containersConfig *DockerConfiguration
 
-func ContainersConfig() ContainerConfiguation {
+func ContainersConfig() DockerConfiguration {
 	if containersConfig == nil {
 		containersConfig = readContainersConfig()
 	}
@@ -22,7 +22,7 @@ func ContainersConfig() ContainerConfiguation {
 	return *containersConfig
 }
 
-func readContainersConfig() *ContainerConfiguation {
+func readContainersConfig() *DockerConfiguration {
 	registry, err := ReadEnv("REGISTRY")
 	if err != nil {
 		log.Fatalf("failed to load REGISTRY")
@@ -38,7 +38,7 @@ func readContainersConfig() *ContainerConfiguation {
 		Password: ReadEnvWithDefault("REPO_PASSWORD", "repoPass"),
 	}
 
-	return &ContainerConfiguation{
+	return &DockerConfiguration{
 		Repository: repo,
 		Registry:   registry,
 		SystemContext: &types.SystemContext{
