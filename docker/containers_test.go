@@ -14,27 +14,33 @@ const (
 	imageName = "dor4420"
 )
 
+var dockerRunner docker.Docker
+
+func init() {
+	containerConfig := config.DockerConfig()
+	dockerRunner = &docker.Container{
+		Config: &containerConfig,
+	}
+}
+
 func TestCheckAuth(t *testing.T) {
-	containerConfig := config.ContainersConfig()
-	if err := docker.CheckAuth(&containerConfig); err != nil {
+	if err := dockerRunner.CheckAuth(); err != nil {
 		t.Errorf("failed: %v", err)
 	}
 }
 
 func TestPull(t *testing.T) {
-	containerConfig := config.ContainersConfig()
 	tarPath := ".."
 
-	if err := docker.Pull(&containerConfig, imageName, tag, tarPath); err != nil {
+	if err := dockerRunner.Pull(imageName, tag, tarPath); err != nil {
 		t.Fatalf("pulling image: %s", err)
 	}
 }
 
 func TestPush(t *testing.T) {
-	containerConfig := config.ContainersConfig()
 	tarPath := fmt.Sprintf("../%s-%s", imageName, tag)
 
-	if err := docker.PushTar(tarPath, imageName, tag, &containerConfig); err != nil {
+	if err := dockerRunner.PushTar(tarPath, imageName, tag); err != nil {
 		t.Errorf("failed pushing: %v", err)
 	}
 

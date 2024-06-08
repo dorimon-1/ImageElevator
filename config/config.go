@@ -16,7 +16,7 @@ func init() {
 
 func LoadConfig() {
 	FtpConfig()
-	ContainersConfig()
+	DockerConfig()
 }
 
 func ReadEnvWithDefault(key string, defaultValue string) string {

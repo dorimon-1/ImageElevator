@@ -14,15 +14,15 @@ type DockerConfiguration struct {
 
 var containersConfig *DockerConfiguration
 
-func ContainersConfig() DockerConfiguration {
+func DockerConfig() DockerConfiguration {
 	if containersConfig == nil {
-		containersConfig = readContainersConfig()
+		containersConfig = readDockerConfig()
 	}
 
 	return *containersConfig
 }
 
-func readContainersConfig() *DockerConfiguration {
+func readDockerConfig() *DockerConfiguration {
 	registry, err := ReadEnv("REGISTRY")
 	if err != nil {
 		log.Fatalf("failed to load REGISTRY")
