@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/endpoints"
 	"github.com/gin-gonic/gin"
@@ -18,5 +20,7 @@ func main() {
 	v1.GET("/ping", endpoints.Health)
 	v1.GET("/sync", endpoints.FtpSync)
 
-	server.Run()
+	if err := server.Run(); err != nil {
+		log.Fatalf("failed to start server: %s", err)
+	}
 }
