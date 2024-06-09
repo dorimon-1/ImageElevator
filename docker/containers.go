@@ -10,6 +10,7 @@ import (
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
+	"github.com/rs/zerolog/log"
 )
 
 type Container struct {
@@ -59,6 +60,27 @@ func (c *Container) PushTar(tarPath, imageName, tag string) error {
 		return err
 	}
 
+	return nil
+}
+
+func PushMultipleTars(tars []string, imageName, tag string, config *config.ContainerConfiguation) error {
+	dstRef, err := parseDocker(config.Registry, config.Repository, imageName, tag)
+	if err != nil {
+		return err
+	}
+
+	for _, tarPath := range tars {
+		srcRef, err := parseTar(tarPath)
+		if err != nil {
+			log.Err(err).Msgf("parsing file %s to an Image Reference", tarPath)
+			continue
+		}
+
+		if err := copyImage(srcRef, dstRef, config.SystemContext); err != nil {
+			log.Err(err).Msgf("sending file %s", tarPath)
+			continue
+		}
+	}
 	return nil
 }
 
