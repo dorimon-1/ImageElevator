@@ -2,7 +2,7 @@ package ftp
 
 import (
 	"fmt"
-	"log"
+	"github.com/rs/zerolog/log"
 	"os"
 	"regexp"
 	"time"
@@ -55,13 +55,13 @@ func Pull(client *FtpClient, files []string) {
 
 		buffer, err := os.Create(file)
 		if err != nil {
-			log.Printf("Failed to create file with error => %s", err)
+			log.Error().Msgf("Failed to create file with error => %s", err)
 			return
 		}
 		path := fmt.Sprintf("%s/%s", client.FtpServerPath, file)
 		err = client.Retrieve(path, buffer)
 		if err != nil {
-			log.Printf("Failed to retreive file with error => %s", err)
+			log.Error().Msgf("Failed to retreive file with error => %s", err)
 		}
 	}
 }
@@ -85,7 +85,7 @@ func List(client *FtpClient) ([]string, error) {
 		matched := regex.MatchString(file.Name())
 
 		if matched {
-			log.Printf("Found file: %s", file.Name())
+			log.Info().Msgf("Found file: %s", file.Name())
 			files_found = append(files_found, file.Name())
 		}
 	}

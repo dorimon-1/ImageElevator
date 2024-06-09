@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"github.com/rs/zerolog/log"
 
 	"github.com/containers/image/v5/types"
 )
@@ -25,12 +25,12 @@ func DockerConfig() DockerConfiguration {
 func readDockerConfig() *DockerConfiguration {
 	registry, err := ReadEnv("REGISTRY")
 	if err != nil {
-		log.Fatalf("failed to load REGISTRY")
+		log.Fatal().Msg("Failed to load REGISTRY env var")
 	}
 
 	repo, err := ReadEnv("REPOSITORY")
 	if err != nil {
-		log.Fatalf("failed to load REPOSITORY")
+		log.Fatal().Msg("Failed to load REPOSITORY env var")
 	}
 
 	dockerAuthConfig := &types.DockerAuthConfig{
