@@ -2,18 +2,16 @@ package ftp
 
 import (
 	"fmt"
+	"github.com/Kjone1/imageElevator/config"
+	"github.com/rs/zerolog/log"
+	"github.com/secsy/goftp"
+	"github.com/ulikunitz/xz"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/rs/zerolog/log"
-	"github.com/ulikunitz/xz"
-
-	"github.com/Kjone1/imageElevator/config"
-	"github.com/secsy/goftp"
 )
 
 var client *goftp.Client
