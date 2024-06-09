@@ -3,15 +3,16 @@ module github.com/Kjone1/imageElevator
 go 1.22.3
 
 require (
+	github.com/containers/common v0.59.1
 	github.com/containers/image/v5 v5.31.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/joho/godotenv v1.5.1
+	github.com/rs/zerolog v1.33.0
 	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
 )
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
-	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/Microsoft/hcsshim v0.12.3 // indirect
@@ -65,6 +66,7 @@ require (
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
@@ -73,6 +75,7 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20230907030200-6d76a0f91e1e // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
@@ -100,7 +103,9 @@ require (
 	github.com/sigstore/rekor v1.3.6 // indirect
 	github.com/sigstore/sigstore v1.8.3 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/stefanberger/go-pkcs11uri v0.0.0-20201008174630-78d3cae3a980 // indirect
+	github.com/spf13/cobra v1.8.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stefanberger/go-pkcs11uri v0.0.0-20230803200340-78284954bff6 // indirect
 	github.com/sylabs/sif/v2 v2.16.0 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
