@@ -2,15 +2,18 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/rs/zerolog/log"
 )
 
 func init() {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Printf("failed reading dotenv: %s", err)
+	// Use .env file only in dev mode
+	if os.Getenv("GIN_MODE") != "release" {
+		if err := godotenv.Load(".env"); err != nil {
+			log.Error().Msgf("Failed reading dotenv file: %s", err)
+		}
 	}
 }
 
@@ -22,11 +25,11 @@ func LoadConfig() {
 func ReadEnvWithDefault(key string, defaultValue string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		log.Printf("%s environment variable not set, using default: %s", key, defaultValue)
+		log.Warn().Msgf("%s environment variable not set, using default: %s", key, defaultValue)
 		return defaultValue
 	}
 
-	log.Printf("Loaded %s=%s", key, value)
+	log.Info().Msgf("Loaded %s=%s", key, value)
 	return value
 }
 
@@ -36,6 +39,6 @@ func ReadEnv(key string) (string, error) {
 		return "", fmt.Errorf("%s environment variable is not defined", key)
 	}
 
-	log.Printf("Loaded %s=%s", key, value)
+	log.Info().Msgf("Loaded %s=%s", key, value)
 	return value, nil
 }

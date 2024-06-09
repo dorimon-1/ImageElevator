@@ -1,7 +1,11 @@
 package main
 
 import (
-	"log"
+	"os"
+	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/endpoints"
@@ -9,6 +13,7 @@ import (
 )
 
 func init() {
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 	config.LoadConfig()
 }
 
@@ -21,6 +26,6 @@ func main() {
 	v1.GET("/sync", endpoints.FtpSync)
 
 	if err := server.Run(); err != nil {
-		log.Fatalf("failed to start server: %s", err)
+		log.Fatal().Msgf("failed to start server: %s", err)
 	}
 }

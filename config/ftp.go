@@ -1,6 +1,6 @@
 package config
 
-import "log"
+import "github.com/rs/zerolog/log"
 
 type FtpConfiguration struct {
 	FtpServerURL  string
@@ -22,7 +22,7 @@ func FtpConfig() FtpConfiguration {
 func readFtpConfig() *FtpConfiguration {
 	ftpServerURL, err := ReadEnv("FTP_SERVER_URL")
 	if err != nil {
-		log.Printf("failed to load FTP_SERVER_URL")
+		log.Error().Msg("Failed to load FTP_SERVER_URL env var")
 	}
 
 	ftpServerPath := ReadEnvWithDefault("FTP_SERVER_PATH", "/")
