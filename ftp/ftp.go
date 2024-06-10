@@ -2,10 +2,14 @@ package ftp
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
+	"io"
 	"os"
 	"regexp"
+	"strings"
 	"time"
+
+	"github.com/rs/zerolog/log"
+	"github.com/ulikunitz/xz"
 
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/secsy/goftp"
@@ -48,22 +52,67 @@ func Connect() (*FtpClient, error) {
 	return &FtpClient{Client: client, FtpConfiguration: &config}, nil
 }
 
-func Pull(client *FtpClient, files []string) {
-	for _, file := range files {
+func Pull(client *FtpClient, files []string) ([]string, error){
+	filePaths := make([]string, len(files))
+	workingDir, err := os.Getwd()
 
-		log.Printf("Pulling file: %s", file)
-
-		buffer, err := os.Create(file)
-		if err != nil {
-			log.Error().Msgf("Failed to create file with error => %s", err)
-			return
-		}
-		path := fmt.Sprintf("%s/%s", client.FtpServerPath, file)
-		err = client.Retrieve(path, buffer)
-		if err != nil {
-			log.Error().Msgf("Failed to retreive file with error => %s", err)
-		}
+	if err != nil {
+		return nil, err
 	}
+
+    for i, file := range files {
+        log.Printf("Pulling file: %s", file)
+        
+        buffer, err := os.Create(file)
+        if err != nil {
+            log.Error().Msgf("Failed to create file with error => %s", err)
+            return nil, err
+        }
+        defer buffer.Close()
+
+        path := fmt.Sprintf("%s/%s", client.FtpServerPath, file)
+
+        if  err = client.Retrieve(path, buffer); err != nil {
+            log.Error().Msgf("Failed to retreive file with error => %s", err)
+            continue
+        }
+
+		file := workingDir + "/" + file
+		if filePath, err := decompress(file); err != nil {
+            log.Error().Msgf("Failed to decompress file on path - %s with error => %s", file, err)
+        } else {
+			filePaths[i] = filePath
+		}
+    } 
+
+    return filePaths, nil
+}
+
+func decompress(inputFilePath string) (string, error) { //todo: should we delete periodicly the used files from the machine or after use (push-function)?
+    inputFile, err := os.Open(inputFilePath)
+    if err != nil {
+        return "", err
+    }
+    defer inputFile.Close()
+
+    outputFilePath := strings.TrimSuffix(inputFilePath, ".xz")
+    outputFile, err := os.Create(outputFilePath)
+    if err != nil {
+        return "", err
+    }
+    defer outputFile.Close()
+
+    xzReader, err := xz.NewReader(inputFile)
+    if err != nil {
+        return "", err
+    }
+
+    _, err = io.Copy(outputFile, xzReader)
+    if err != nil {
+        return "", err
+    }
+
+    return outputFilePath, nil
 }
 
 func List(client *FtpClient) ([]string, error) {
