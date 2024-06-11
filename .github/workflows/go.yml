@@ -11,15 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     services:
       ftp:
-        image: stilliard/pure-ftpd
+        image: fauria/vsftpd
         ports:
           - 21:21
           - 30000-30009:30000-30009
         options: >-
-          --health-cmd "nc -zv localhost 21 || exit 1"
+          --health-cmd "nc -zv localhost 21"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=3
     environment: devel
     env:
       REGISTRY: docker.io
