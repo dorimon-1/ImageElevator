@@ -32,22 +32,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    #- name: 🚀 Set up Go
-    #  uses: actions/setup-go@v4
-    #  with:
-     #   go-version: '1.22.3'
+    - name: 🚀 Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22.3'
 
-    #- name: 🧊 Install Task
-    #  uses: arduino/setup-task@v1
-    #  with:
-     #   version: 3.x
-     #   repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: 🧊 Install Task
+      uses: arduino/setup-task@v1
+      with:
+        version: 3.x
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-    #- name: ⚙️ Install dependencies
-     # run: task setup
+    - name: ⚙️ Install dependencies
+      run: task setup
 
-    #- name: 🔨 Build
-     # run: task build
+    - name: 🔨 Build
+      run: task build
 
     - name: Install lftp
       run: sudo apt-get update && sudo apt-get install -y lftp
@@ -62,21 +62,5 @@ jobs:
         CONTAINER_ID=$(docker ps -q --filter 'ancestor=delfer/alpine-ftp-server')
         docker logs $CONTAINER_ID
 
-    - name: Run tests
-      run: |
-        # Run your tests here
-        # For example, you can use lftp to interact with the FTP server
-        echo "Listing files on FTP server"
-        lftp -u testuser,testpassword -e "ls; bye" ftp://localhost:21
-        echo "Uploading and downloading a file"
-        echo "test file content" > testfile.txt
-        lftp -u testuser,testpassword -e "put testfile.txt; bye" ftp://localhost:21
-        lftp -u testuser,testpassword -e "get testfile.txt -o downloaded_testfile.txt; bye" ftp://localhost:21
-        diff testfile.txt downloaded_testfile.txt
-
-    - name: Cleanup
-      run: |
-        rm -f testfile.txt downloaded_testfile.txt
-
-    #- name: 🔍 Test
-     # run: lftp -u testuser,password -e "ls; bye" ftp://localhost:21
+    - name: 🔍 Test
+      run: task test
