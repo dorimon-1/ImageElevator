@@ -54,7 +54,7 @@ tasks:
       - sh: '{{ .CONTAINER_RUNTIME }} -v'
         msg: "CONTAINER_RUNTIME Not Found, Cant run FTP unit tests"
     vars:
-      CONTAINER_RUNTIME: "sudo nerdctl"
+      CONTAINER_RUNTIME: "docker"
       PS_FILTER: "--filter 'name=ftp'"
       CONTAINER_ID: "{{ .CONTAINER_RUNTIME }} ps -q {{ .PS_FILTER }}"
     env:
@@ -83,5 +83,5 @@ tasks:
     deps:
       - $test_ftp
     cmds:
-      # - go test -v -skip ftp/ftp_test.go  ./...
+      - go test -v -skip ftp/ftp_test.go  ./...
 
