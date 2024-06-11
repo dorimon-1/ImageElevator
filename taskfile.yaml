@@ -2,6 +2,11 @@ version: '3'
 
 silent: true
 
+vars:
+  CONTAINER_RUNTIME: "docker"
+  PS_FILTER: "--filter 'name=ftp'"
+  CONTAINER_ID: "{{ .CONTAINER_RUNTIME }} ps -q {{ .PS_FILTER }}"
+
 tasks:
   default:
     desc: Runs 'task help'.
@@ -53,10 +58,6 @@ tasks:
     preconditions:
       - sh: '{{ .CONTAINER_RUNTIME }} -v'
         msg: "CONTAINER_RUNTIME Not Found, Cant run FTP unit tests"
-    vars:
-      CONTAINER_RUNTIME: "docker"
-      PS_FILTER: "--filter 'name=ftp'"
-      CONTAINER_ID: "{{ .CONTAINER_RUNTIME }} ps -q {{ .PS_FILTER }}"
     env:
       FTP_SERVER_URL: localhost
       FTP_USERNAME: testuser
@@ -69,19 +70,18 @@ tasks:
           --env ADDRESS=0.0.0.0 \
           --name ftp_server \
           delfer/alpine-ftp-server:latest@sha256:8f63d017e25ac17fb1b5c109fff82b8bb88e42f33ea81c0a4849f955b521e87d
-      - defer: "{{ .CONTAINER_RUNTIME }} rm -f $({{ .CONTAINER_ID }})"
       - "{{ .CONTAINER_RUNTIME }} ps {{ .PS_FILTER }}"
       - echo "Docker logs for FTP container:"
       - "{{ .CONTAINER_RUNTIME }} logs  $({{ .CONTAINER_ID }})"
       - echo "Checking if FTP server is running..."
       - sleep 5
       - nc -z localhost 21
-      - go test -v ftp/ftp_test.go
 
   test:
     desc: Run unit tests.
     deps:
       - $test_ftp
     cmds:
+      - defer: "{{ .CONTAINER_RUNTIME }} rm -f $({{ .CONTAINER_ID }})"
       - go test -v -failfast -skip=ftp_test ./...
 
