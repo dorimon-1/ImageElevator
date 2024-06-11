@@ -18,7 +18,6 @@ func setupDecompress(t *testing.T, testData string) (string, func()){
     if err != nil {
         t.Fatal("Failed to create temporary XZ file:", err)
     }
-    defer os.Remove(tempXZFile.Name())
 
     var buffer bytes.Buffer
     xzWriter, err := xz.NewWriter(&buffer)
