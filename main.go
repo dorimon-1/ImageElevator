@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Kjone1/imageElevator/config"
-	"github.com/Kjone1/imageElevator/endpoints"
+	"github.com/Kjone1/imageElevator/handler"
 	"github.com/Kjone1/imageElevator/runner"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
@@ -35,9 +35,9 @@ func main() {
 
 	v1 := server.Group("/v1")
 	runner := runner.NewRunner(ctx)
-	handler := endpoints.NewHandler(runner)
+	handler := handler.NewHandler(runner)
 
-	v1.GET("/ping", endpoints.Health)
+	v1.GET("/ping", handler.Health)
 	v1.GET("/sync", handler.Sync)
 
 	if err := server.Run(); err != nil {

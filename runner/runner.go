@@ -45,8 +45,14 @@ func NewRunner(ctx context.Context) *Runner {
 	return runner
 }
 
-func (r *Runner) TriggerUpload() {
-	r.runUploadChan <- nil
+func (r *Runner) TriggerUpload() error {
+	select {
+	case r.runUploadChan <- nil:
+		return nil
+	default:
+		return errors.New("too many requests")
+
+	}
 }
 
 func (r *Runner) uploaderRoutine() {

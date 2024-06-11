@@ -1,4 +1,4 @@
-package endpoints
+package handler
 
 import (
 	"github.com/Kjone1/imageElevator/runner"
@@ -16,6 +16,14 @@ func NewHandler(runner *runner.Runner) *Handler {
 }
 
 func (h *Handler) Sync(c *gin.Context) {
-	h.runner.TriggerUpload()
+	if err := h.runner.TriggerUpload(); err != nil {
+		c.String(208, err.Error())
+		return
+	}
+
 	c.String(200, "sync requested succesfully")
+}
+
+func (h *Handler) Health(c *gin.Context) {
+	c.String(200, "pong")
 }
