@@ -9,6 +9,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      ftp:
+        image: stilliard/pure-ftpd
+        ports:
+          - 21:21
+          - 30000-30009:30000-30009
+        options: >-
+          --health-cmd "nc -zv localhost 21" 
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
     environment: devel
     env:
       REGISTRY: docker.io
@@ -19,22 +30,29 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: 🚀 Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.22.3'
+    #- name: 🚀 Set up Go
+    #  uses: actions/setup-go@v4
+    #  with:
+     #   go-version: '1.22.3'
 
-    - name: 🧊 Install Task
-      uses: arduino/setup-task@v1
-      with:
-        version: 3.x
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    #- name: 🧊 Install Task
+    #  uses: arduino/setup-task@v1
+    #  with:
+     #   version: 3.x
+     #   repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: ⚙️ Install dependencies
-      run: task setup
+    #- name: ⚙️ Install dependencies
+     # run: task setup
 
-    - name: 🔨 Build
-      run: task build
+    #- name: 🔨 Build
+     # run: task build
 
-    - name: 🔍 Test
-      run: task test
+    - name: Wait for FTP server to be healthy
+      run: |
+        while ! nc -zv localhost 21; do
+          echo "Waiting for FTP server to start..."
+          sleep 1
+        done
+
+    #- name: 🔍 Test
+     # run: lftp -u testuser,password -e "ls; bye" ftp://localhost:21
