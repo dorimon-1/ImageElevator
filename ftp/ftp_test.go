@@ -5,8 +5,9 @@ import (
 	"io"
 	"os"
 	"testing"
-
+    
 	"github.com/ulikunitz/xz"
+    "github.com/rs/zerolog/log"
     "github.com/Kjone1/imageElevator/ftp"
 )
 
@@ -37,8 +38,10 @@ func setupDecompress(t *testing.T, testData string) (string, func()){
 
     cleanup := func() {
         os.Remove(tempXZFile.Name())
+        log.Info().Msgf("Temp test file has been deleted")
     }
 
+    log.Info().Msgf("Decompress setup had finished sucessfuly")
     return tempXZFile.Name(), cleanup
 }
 
