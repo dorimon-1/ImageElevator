@@ -9,19 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      ftp:
-        image: delfer/alpine-ftp-server
-        ports:
-          - 21:21
-          - 30000-30009:30000-30009
-        options: >-
-          --env USERS=testuser|testpassword
-          --env ADDRESS=0.0.0.0
-          --health-cmd "nc -zv localhost 21"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
     environment: devel
     env:
       REGISTRY: docker.io
@@ -48,16 +35,6 @@ jobs:
 
     - name: 🔨 Build
       run: task build
-
-    - name: Debug FTP server
-      run: |
-        echo "Checking if FTP server is running..."
-        nc -zv localhost 21
-        echo "FTP server status:"
-        docker ps -a
-        echo "Docker logs for FTP container:"
-        CONTAINER_ID=$(docker ps -q --filter 'ancestor=delfer/alpine-ftp-server')
-        docker logs $CONTAINER_ID
 
     - name: 🔍 Test
       run: task test
