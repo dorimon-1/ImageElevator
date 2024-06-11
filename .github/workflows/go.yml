@@ -59,7 +59,8 @@ jobs:
         echo "FTP server status:"
         docker ps -a
         echo "Docker logs for FTP container:"
-        docker logs $(docker-compose ps -q ftp)
+        CONTAINER_ID=$(docker ps -q --filter 'ancestor=delfer/alpine-ftp-server')
+        docker logs $CONTAINER_ID
 
     - name: Run tests
       run: |
@@ -76,7 +77,6 @@ jobs:
     - name: Cleanup
       run: |
         rm -f testfile.txt downloaded_testfile.txt
-        
 
     #- name: 🔍 Test
      # run: lftp -u testuser,password -e "ls; bye" ftp://localhost:21
