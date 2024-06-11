@@ -11,15 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     services:
       ftp:
-        image: fauria/vsftpd
+        image: delfer/alpine-ftp-server
         ports:
           - 21:21
           - 30000-30009:30000-30009
         options: >-
+          --env USERS=testuser|testpassword
+          --env ADDRESS=0.0.0.0
           --health-cmd "nc -zv localhost 21"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
     environment: devel
     env:
       REGISTRY: docker.io
