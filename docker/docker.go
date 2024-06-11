@@ -1,6 +1,6 @@
 package docker
 
-type Docker interface {
+type RegistryAdapter interface {
 	CheckAuth() error
 	Pull(image, tag, targetPath string) error
 	PushTar(tarPath, imageName, tag string) error

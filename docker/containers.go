@@ -13,21 +13,21 @@ import (
 )
 
 type Container struct {
-	Config *config.DockerConfiguration
+	*config.RegistryConfiguration
 }
 
 func (c *Container) CheckAuth() error {
 	return docker.CheckAuth(
 		context.Background(),
-		c.Config.SystemContext,
-		c.Config.SystemContext.DockerAuthConfig.Username,
-		c.Config.SystemContext.DockerAuthConfig.Password,
-		c.Config.Registry,
+		c.SystemContext,
+		c.SystemContext.DockerAuthConfig.Username,
+		c.SystemContext.DockerAuthConfig.Password,
+		c.Registry,
 	)
 }
 
 func (c *Container) Pull(image, tag, targetPath string) error {
-	imgRef, err := parseDocker(c.Config.Registry, c.Config.Repository, image, tag)
+	imgRef, err := parseDocker(c.Registry, c.Repository, image, tag)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (c *Container) Pull(image, tag, targetPath string) error {
 		return err
 	}
 
-	if err := copyImage(imgRef, dstRef, c.Config.SystemContext); err != nil {
+	if err := copyImage(imgRef, dstRef, c.SystemContext); err != nil {
 		return err
 	}
 
@@ -45,7 +45,7 @@ func (c *Container) Pull(image, tag, targetPath string) error {
 }
 
 func (c *Container) PushTar(tarPath, imageName, tag string) error {
-	dstRef, err := parseDocker(c.Config.Registry, c.Config.Repository, imageName, tag)
+	dstRef, err := parseDocker(c.Registry, c.Repository, imageName, tag)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (c *Container) PushTar(tarPath, imageName, tag string) error {
 		return err
 	}
 
-	if err := copyImage(srcRef, dstRef, c.Config.SystemContext); err != nil {
+	if err := copyImage(srcRef, dstRef, c.SystemContext); err != nil {
 		return err
 	}
 

@@ -19,7 +19,7 @@ func init() {
 
 func LoadConfig() {
 	FtpConfig()
-	DockerConfig()
+	RegistryConfig()
 }
 
 func ReadEnvWithDefault(key string, defaultValue string) string {
