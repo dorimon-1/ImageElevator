@@ -13,11 +13,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/rs/zerolog/log"
-
-	"github.com/Kjone1/imageElevator/config"
-	"github.com/secsy/goftp"
 )
 
 var client *goftp.Client

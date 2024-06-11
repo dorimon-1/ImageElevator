@@ -6,17 +6,18 @@ import (
 	"time"
 
 	"github.com/Kjone1/imageElevator/config"
-	"github.com/Kjone1/imageElevator/containers"
+	"github.com/Kjone1/imageElevator/docker"
 	"github.com/Kjone1/imageElevator/ftp"
 	"github.com/rs/zerolog/log"
 )
 
 type Runner struct {
-	ctx            context.Context
-	sampleRate     time.Duration
-	timer          *time.Timer
-	runUploadChan  chan interface{}
-	resetTimerChan chan interface{}
+	ctx             context.Context
+	sampleRate      time.Duration
+	timer           *time.Timer
+	runUploadChan   chan interface{}
+	resetTimerChan  chan interface{}
+	registryAdapter docker.RegistryAdapter
 }
 
 func NewRunner(ctx context.Context) *Runner {
@@ -26,7 +27,17 @@ func NewRunner(ctx context.Context) *Runner {
 	runUploadChan := make(chan interface{})
 	resetTimerChan := make(chan interface{})
 
-	runner := &Runner{ctx: ctx, sampleRate: rate, timer: timer, runUploadChan: runUploadChan, resetTimerChan: resetTimerChan}
+	registryConfig := config.RegistryConfig()
+	registryAdapter := docker.NewRegistry(&registryConfig)
+
+	runner := &Runner{
+		ctx:             ctx,
+		sampleRate:      rate,
+		timer:           timer,
+		runUploadChan:   runUploadChan,
+		resetTimerChan:  resetTimerChan,
+		registryAdapter: registryAdapter,
+	}
 
 	go runner.timerRoutine()
 	go runner.uploaderRoutine()
@@ -56,6 +67,7 @@ func (r *Runner) uploaderRoutine() {
 			if err := ftp.Close(); err != nil {
 				log.Err(err).Msg("failed to close connection")
 			}
+
 			close(r.runUploadChan)
 			close(r.resetTimerChan)
 			return
@@ -69,10 +81,20 @@ func (r *Runner) uploadImages() error {
 		return err
 	}
 
-	if err := containers.PushMultipleTars(r.ctx, tarFiles, "imageName", "tag", config.ContainersConfig()); err != nil {
-		return err
+	images := tarsToImages(tarFiles)
+
+	for i := 0; i < len(images); i++ {
+		if err := r.registryAdapter.PushTar(r.ctx, &images[i]); err != nil {
+			log.Err(err).Msgf("failed to push %s to registry", images[i].TarPath)
+		}
 	}
 
+	return nil
+}
+
+// TODO: Make a function receives a list of tar files and returns a docker.Image (ImageName, Tag, TarPath) by regex
+func tarsToImages(tarFiles []string) []docker.Image {
+	_ = tarFiles
 	return nil
 }
 
