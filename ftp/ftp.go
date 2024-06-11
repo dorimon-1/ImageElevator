@@ -53,14 +53,14 @@ func Connect() (*FtpClient, error) {
 }
 
 func Pull(client *FtpClient, files []string) ([]string, error){
-	filePaths := make([]string, len(files))
+	filePaths := make([]string, 0)
 	workingDir, err := os.Getwd()
 
 	if err != nil {
 		return nil, err
 	}
 
-    for i, file := range files {
+    for _, file := range files {
         log.Printf("Pulling file: %s", file)
         
         buffer, err := os.Create(file)
@@ -81,14 +81,14 @@ func Pull(client *FtpClient, files []string) ([]string, error){
 		if filePath, err := Decompress(file); err != nil {
             log.Error().Msgf("Failed to decompress file on path - %s with error => %s", file, err)
         } else {
-			filePaths[i] = filePath
+			filePaths = append(filePaths, filePath)
 		}
     } 
 
     return filePaths, nil
 }
 
-func Decompress(inputFilePath string) (string, error) { //todo: should we delete periodicly the used files from the machine or after use (push-function)?
+func Decompress(inputFilePath string) (string, error) {
     inputFile, err := os.Open(inputFilePath)
     if err != nil {
         return "", err
