@@ -23,6 +23,7 @@ func setupDecompress(t *testing.T, testData string) (string, func()) {
 		t.Fatal("compression of test-file failed:", err)
 	}
 	if _, err := io.WriteString(xzWriter, testData); err != nil {
+		// TODO: write unique error msg
 		t.Fatal("compression of test-file failed:", err)
 	}
 	if err := xzWriter.Close(); err != nil {
