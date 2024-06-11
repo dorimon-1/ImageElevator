@@ -2,3 +2,4 @@ tmp
 go.sum
 .env
 imageElevator.exe
+.vscode

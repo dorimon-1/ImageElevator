@@ -6,7 +6,6 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/endpoints"
 	"github.com/gin-gonic/gin"

@@ -1,4 +1,4 @@
-package containers_test
+package docker_test
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/Kjone1/imageElevator/config"
-	"github.com/Kjone1/imageElevator/containers"
+	"github.com/Kjone1/imageElevator/docker"
 )
 
 const (
@@ -14,27 +14,33 @@ const (
 	imageName = "dor4420"
 )
 
+var imageRegistry docker.RegistryAdapter
+
+func init() {
+	containerConfig := config.RegistryConfig()
+	imageRegistry = &docker.Container{
+		RegistryConfiguration: &containerConfig,
+	}
+}
+
 func TestCheckAuth(t *testing.T) {
-	containerConfig := config.ContainersConfig()
-	if err := containers.CheckAuth(&containerConfig); err != nil {
+	if err := imageRegistry.CheckAuth(); err != nil {
 		t.Errorf("failed: %v", err)
 	}
 }
 
 func TestPull(t *testing.T) {
-	containerConfig := config.ContainersConfig()
 	tarPath := ".."
 
-	if err := containers.Pull(&containerConfig, imageName, tag, tarPath); err != nil {
+	if err := imageRegistry.Pull(imageName, tag, tarPath); err != nil {
 		t.Fatalf("pulling image: %s", err)
 	}
 }
 
 func TestPush(t *testing.T) {
-	containerConfig := config.ContainersConfig()
 	tarPath := fmt.Sprintf("../%s-%s", imageName, tag)
 
-	if err := containers.PushTar(tarPath, imageName, tag, &containerConfig); err != nil {
+	if err := imageRegistry.PushTar(tarPath, imageName, tag); err != nil {
 		t.Errorf("failed pushing: %v", err)
 	}
 
