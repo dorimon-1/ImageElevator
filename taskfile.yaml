@@ -83,5 +83,5 @@ tasks:
     deps:
       - $test_ftp
     cmds:
-      - go test -v -failfast -run=ftp_test ./...
+      - go test -v -failfast -skip=ftp_test ./...
 
