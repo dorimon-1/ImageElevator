@@ -52,11 +52,31 @@ jobs:
     - name: Install lftp
       run: sudo apt-get update && sudo apt-get install -y lftp
 
+    - name: Debug FTP server
+      run: |
+        echo "Checking if FTP server is running..."
+        nc -zv localhost 21
+        echo "FTP server status:"
+        docker ps -a
+        echo "Docker logs for FTP container:"
+        docker logs $(docker-compose ps -q ftp)
+
     - name: Run tests
       run: |
         # Run your tests here
         # For example, you can use lftp to interact with the FTP server
+        echo "Listing files on FTP server"
         lftp -u testuser,testpassword -e "ls; bye" ftp://localhost:21
+        echo "Uploading and downloading a file"
+        echo "test file content" > testfile.txt
+        lftp -u testuser,testpassword -e "put testfile.txt; bye" ftp://localhost:21
+        lftp -u testuser,testpassword -e "get testfile.txt -o downloaded_testfile.txt; bye" ftp://localhost:21
+        diff testfile.txt downloaded_testfile.txt
+
+    - name: Cleanup
+      run: |
+        rm -f testfile.txt downloaded_testfile.txt
+        
 
     #- name: 🔍 Test
      # run: lftp -u testuser,password -e "ls; bye" ftp://localhost:21
