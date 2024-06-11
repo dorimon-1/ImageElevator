@@ -10,11 +10,22 @@ import (
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
-	"github.com/rs/zerolog/log"
 )
 
 type Container struct {
 	*config.RegistryConfiguration
+}
+
+type Image struct {
+	Name    string
+	Tag     string
+	TarPath string
+}
+
+func NewRegistry(config *config.RegistryConfiguration) RegistryAdapter {
+	return &Container{
+		RegistryConfiguration: config,
+	}
 }
 
 func (c *Container) CheckAuth() error {
@@ -45,13 +56,13 @@ func (c *Container) Pull(ctx context.Context, image, tag, targetPath string) err
 	return nil
 }
 
-func (c *Container) PushTar(ctx context.Context, tarPath, imageName, tag string) error {
-	dstRef, err := parseDocker(c.Registry, c.Repository, imageName, tag)
+func (c *Container) PushTar(ctx context.Context, image *Image) error {
+	dstRef, err := parseDocker(c.Registry, c.Repository, image.Name, image.Tag)
 	if err != nil {
 		return err
 	}
 
-	srcRef, err := parseTar(tarPath)
+	srcRef, err := parseTar(image.TarPath)
 	if err != nil {
 		return err
 	}
@@ -60,27 +71,6 @@ func (c *Container) PushTar(ctx context.Context, tarPath, imageName, tag string)
 		return err
 	}
 
-	return nil
-}
-
-func PushMultipleTars(ctx context.Context, tars []string, imageName, tag string, config config.ContainerConfiguation) error {
-	dstRef, err := parseDocker(config.Registry, config.Repository, imageName, tag)
-	if err != nil {
-		return err
-	}
-
-	for _, tarPath := range tars {
-		srcRef, err := parseTar(tarPath)
-		if err != nil {
-			log.Err(err).Msgf("parsing file %s to an Image Reference", tarPath)
-			continue
-		}
-
-		if err := copyImage(ctx, srcRef, dstRef, config.SystemContext); err != nil {
-			log.Err(err).Msgf("sending file %s", tarPath)
-			continue
-		}
-	}
 	return nil
 }
 
