@@ -49,14 +49,14 @@ jobs:
     #- name: 🔨 Build
      # run: task build
 
-    - name: Wait for FTP server to be healthy
+    - name: Install lftp
+      run: sudo apt-get update && sudo apt-get install -y lftp
+
+    - name: Run tests
       run: |
-        echo "Waiting for FTP server to start..."
-        sleep 30
-        until [ "$(docker inspect --format='{{.State.Health.Status}}' $(docker-compose ps -q ftp))" == "healthy" ]; do
-          echo "Waiting for FTP server to be healthy..."
-          sleep 10
-        done
+        # Run your tests here
+        # For example, you can use lftp to interact with the FTP server
+        lftp -u testuser,testpassword -e "ls; bye" ftp://localhost:21
 
     #- name: 🔍 Test
      # run: lftp -u testuser,password -e "ls; bye" ftp://localhost:21
