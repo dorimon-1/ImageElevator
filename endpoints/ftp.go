@@ -22,5 +22,9 @@ func FtpSync(c *gin.Context) {
 		log.Info().Msg("No new images were found")
 		return
 	}
-	ftp.Pull(client, images)
+
+	_ , err = ftp.Pull(client, images)
+	if err != nil {
+		log.Error().Msgf("Pulling images from FTP server failed with error => %s", err)
+	}
 }
