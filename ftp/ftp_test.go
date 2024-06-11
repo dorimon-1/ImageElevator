@@ -65,3 +65,12 @@ func TestDecompress(t *testing.T) {
 		t.Errorf("inputFilePath do not much expectation. Expected: %s, Recieved: %s", testData, decompressedData)
 	}
 }
+
+func TestConnect(t *testing.T) {
+
+	_, err := ftp.Connect()
+
+	if err != nil {
+		t.Errorf("failed: %v", err)
+	}
+}
