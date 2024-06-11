@@ -1,6 +1,7 @@
 package ftp
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/rs/zerolog/log"
@@ -12,6 +13,11 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/rs/zerolog/log"
+
+	"github.com/Kjone1/imageElevator/config"
+	"github.com/secsy/goftp"
 )
 
 var client *goftp.Client
@@ -46,8 +52,16 @@ func Connect(URL string, username string, password string) (*goftp.Client, error
 	return client, nil
 }
 
+func Close() error {
+	if client != nil {
+		return client.Close()
+	}
+	return errors.New("connection is already closed")
+}
+
 func Pull(client *goftp.Client, files ...string) ([]string, error) {
 	filesPulled := make([]string, 0)
+
 	workingDir, err := os.Getwd()
 
 	if err != nil {
