@@ -1,4 +1,4 @@
-package containers
+package docker
 
 import (
 	"context"
@@ -12,18 +12,22 @@ import (
 	"github.com/containers/image/v5/types"
 )
 
-func CheckAuth(config *config.ContainerConfiguation) error {
+type Container struct {
+	*config.RegistryConfiguration
+}
+
+func (c *Container) CheckAuth() error {
 	return docker.CheckAuth(
 		context.Background(),
-		config.SystemContext,
-		config.SystemContext.DockerAuthConfig.Username,
-		config.SystemContext.DockerAuthConfig.Password,
-		config.Registry,
+		c.SystemContext,
+		c.SystemContext.DockerAuthConfig.Username,
+		c.SystemContext.DockerAuthConfig.Password,
+		c.Registry,
 	)
 }
 
-func Pull(config *config.ContainerConfiguation, image, tag, targetPath string) error {
-	imgRef, err := parseDocker(config.Registry, config.Repository, image, tag)
+func (c *Container) Pull(image, tag, targetPath string) error {
+	imgRef, err := parseDocker(c.Registry, c.Repository, image, tag)
 	if err != nil {
 		return err
 	}
@@ -33,15 +37,15 @@ func Pull(config *config.ContainerConfiguation, image, tag, targetPath string) e
 		return err
 	}
 
-	if err := copyImage(imgRef, dstRef, config.SystemContext); err != nil {
+	if err := copyImage(imgRef, dstRef, c.SystemContext); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func PushTar(tarPath, imageName, tag string, config *config.ContainerConfiguation) error {
-	dstRef, err := parseDocker(config.Registry, config.Repository, imageName, tag)
+func (c *Container) PushTar(tarPath, imageName, tag string) error {
+	dstRef, err := parseDocker(c.Registry, c.Repository, imageName, tag)
 	if err != nil {
 		return err
 	}
@@ -51,7 +55,7 @@ func PushTar(tarPath, imageName, tag string, config *config.ContainerConfiguatio
 		return err
 	}
 
-	if err := copyImage(srcRef, dstRef, config.SystemContext); err != nil {
+	if err := copyImage(srcRef, dstRef, c.SystemContext); err != nil {
 		return err
 	}
 
