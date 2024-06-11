@@ -1,4 +1,4 @@
-package ftp
+package ftp_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/ulikunitz/xz"
+    "github.com/Kjone1/imageElevator/ftp"
 )
 
 
@@ -42,11 +43,11 @@ func setupDecompress(t *testing.T, testData string) (string, func()){
 }
 
 func TestDecompress(t *testing.T) {
-    testData := string("Test data for decompression")
+    testData := "Test data for decompression"
     inputFile, cleanup := setupDecompress(t,testData)
     defer cleanup()
 
-    decompressedFilePath, err := decompress(inputFile)
+    decompressedFilePath, err := ftp.Decompress(inputFile)
     if err != nil {
         t.Fatal("Decompression failed:", err)
     }
