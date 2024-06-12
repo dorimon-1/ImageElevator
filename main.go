@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,7 +31,12 @@ func main() {
 		syscall.SIGINT,
 		syscall.SIGPIPE,
 	)
-	defer cancel()
+
+	defer func() {
+		log.Debug().Msg("Shutting down gracefully...")
+		cancel()
+	}()
+
 	server := gin.Default()
 
 	v1 := server.Group("/v1")
@@ -40,7 +46,32 @@ func main() {
 	v1.GET("/ping", handler.Health)
 	v1.GET("/sync", handler.Sync)
 
-	if err := server.Run(); err != nil {
-		log.Fatal().Msgf("failed to start server: %s", err)
+	httpServer := serverHttp(server)
+	<-ctx.Done()
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Fatal().Msgf("Server forced to shutdown: %s", err)
 	}
+
+	log.Info().Msg("Server exiting")
+}
+
+func serverHttp(handler http.Handler) *http.Server {
+
+	port := config.ReadEnvWithDefault("PORT", "8080")
+	httpServer := &http.Server{
+		Addr:    ":" + port,
+		Handler: handler,
+	}
+
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal().Msgf("failed to start server: %s", err)
+		}
+	}()
+
+	return httpServer
 }

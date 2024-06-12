@@ -22,9 +22,9 @@ type Runner struct {
 
 func NewRunner(ctx context.Context) *Runner {
 	runnerConf := config.RunnerConfig()
-	rate := runnerConf.SampleRate * time.Second
+	rate := runnerConf.SampleRate * time.Minute
 	timer := time.NewTimer(rate)
-	runUploadChan := make(chan interface{})
+	runUploadChan := make(chan interface{}, 1)
 	resetTimerChan := make(chan interface{})
 
 	registryConfig := config.RegistryConfig()
@@ -70,6 +70,7 @@ func (r *Runner) uploaderRoutine() {
 			r.resetTimerChan <- nil
 
 		case <-r.ctx.Done():
+			log.Debug().Msg("Closing Image Uploader")
 			if err := ftp.Close(); err != nil {
 				log.Err(err).Msg("failed to close connection")
 			}
