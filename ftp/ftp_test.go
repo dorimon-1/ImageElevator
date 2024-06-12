@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/Kjone1/imageElevator/ftp"
 	"github.com/rs/zerolog/log"
+	"github.com/secsy/goftp"
 	"github.com/ulikunitz/xz"
 )
 
@@ -67,11 +69,36 @@ func TestDecompress(t *testing.T) {
 	}
 }
 
+var client *goftp.Client
+
+func SetupClient(t *testing.T) *goftp.Client {
+	if client == nil {
+		ftpClient, err := ftp.Connect("localhost", "testuser", "testpassword")
+		if err != nil {
+			t.Errorf("Failed With FTP client setup => %v", err)
+		}
+		client = ftpClient
+	}
+	return client
+}
 func TestConnect(t *testing.T) {
+	client := SetupClient(t)
+	if client == nil {
+		t.Error("Failed to Connect to FTP server")
+	}
+}
 
-	_, err := ftp.Connect()
-
+func TestList(t *testing.T) {
+	client := SetupClient(t)
+	testdir, err := client.Mkdir("test-dir")
 	if err != nil {
-		t.Errorf("failed: %v", err)
+		t.Errorf("Failed creating testdir for TestList => %v", err)
+	}
+	test_list, err := ftp.List(client, "/", "test.*")
+	if err != nil {
+		t.Errorf("Reading FTP directory failed with error => %s", err)
+	}
+	if !slices.Contains(test_list, testdir) {
+		t.Errorf("Test dir not found in FTP server")
 	}
 }
