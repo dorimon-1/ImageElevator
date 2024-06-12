@@ -61,7 +61,7 @@ func Pull(client *goftp.Client, files []string) ([]string, error) {
 		buffer, err := os.Create(file)
 		if err != nil {
 			log.Error().Msgf("Failed to create file with error => %s", err)
-			// TODO: do we want to use return here?
+			// TODO: Q: do we want to use return here?
 			return nil, err
 		}
 		defer buffer.Close()
@@ -70,8 +70,9 @@ func Pull(client *goftp.Client, files []string) ([]string, error) {
 			log.Error().Msgf("Failed to retreive file with error => %s", err)
 			continue
 		}
-
+		// TODO: CHECK: if needed becouse list already returns full file path
 		local_file := workingDir + "/" + file
+		// TODO: Move to seperate function becouse decopress not always needed when pulling e.g. voice station
 		if decompressed, err := Decompress(local_file); err != nil {
 			log.Error().Msgf("Failed to decompress file '%s' with error => %s", local_file, err)
 		} else {
@@ -109,6 +110,7 @@ func Decompress(inputFilePath string) (string, error) {
 	return outputFilePath, nil
 }
 
+// TODO: Q: maybe rename to ListWithRegex and add List function without regex
 func List(client *goftp.Client, path string, pattern string) ([]string, error) {
 	path = strings.TrimSuffix(path, "/")
 	files, err := client.ReadDir(path)
