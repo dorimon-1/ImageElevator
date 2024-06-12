@@ -71,7 +71,7 @@ func TestDecompress(t *testing.T) {
 
 var client *goftp.Client
 
-func SetupClient(t *testing.T) *goftp.Client {
+func setupClient(t *testing.T) *goftp.Client {
 	if client == nil {
 		ftpClient, err := ftp.Connect("localhost", "testuser", "testpassword")
 		if err != nil {
@@ -82,14 +82,14 @@ func SetupClient(t *testing.T) *goftp.Client {
 	return client
 }
 func TestConnect(t *testing.T) {
-	client := SetupClient(t)
+	client := setupClient(t)
 	if client == nil {
 		t.Error("Failed to Connect to FTP server")
 	}
 }
 
 func TestList(t *testing.T) {
-	client := SetupClient(t)
+	client := setupClient(t)
 	testdir, err := client.Mkdir("test-dir")
 	if err != nil {
 		t.Errorf("Failed creating testdir for TestList => %v", err)

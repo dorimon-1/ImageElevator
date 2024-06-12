@@ -30,11 +30,11 @@ func Client() (*goftp.Client, error) {
 	return client, nil
 }
 
-func Connect(URL string, Username string, Password string) (*goftp.Client, error) {
+func Connect(URL string, userName string, passWord string) (*goftp.Client, error) {
 
 	ftpConfig := goftp.Config{
-		User:               Username,
-		Password:           Password,
+		User:               userName,
+		Password:           passWord,
 		ConnectionsPerHost: 10,
 		Timeout:            10 * time.Second,
 		Logger:             nil,
@@ -63,8 +63,7 @@ func Pull(client *goftp.Client, files []string) ([]string, error) {
 		buffer, err := os.Create(local_file)
 		if err != nil {
 			log.Error().Msgf("Failed to create file with error => %s", err)
-			// TODO: Q: do we want to use return here?
-			return nil, err
+			continue
 		}
 		defer buffer.Close()
 
@@ -112,7 +111,6 @@ func Decompress(inputFilePath string) (string, error) {
 	return outputFilePath, nil
 }
 
-// TODO: Q: maybe rename to ListWithRegex and add List function without regex
 func List(client *goftp.Client, path string, pattern string) ([]string, error) {
 
 	if path != "/" {
