@@ -112,18 +112,22 @@ func Decompress(inputFilePath string) (string, error) {
 
 // TODO: Q: maybe rename to ListWithRegex and add List function without regex
 func List(client *goftp.Client, path string, pattern string) ([]string, error) {
-	path = strings.TrimSuffix(path, "/")
+
+	if path != "/" {
+		path = strings.TrimSuffix(path, "/")
+	}
+
 	files, err := client.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
 
-	var files_found []string
-
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
 		return nil, fmt.Errorf("Failed building regex => %s", err)
 	}
+
+	var files_found []string
 
 	for _, file := range files {
 		matched := regex.MatchString(file.Name())
