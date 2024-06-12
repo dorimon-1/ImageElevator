@@ -76,7 +76,6 @@ tasks:
     desc: Run unit tests.
     deps:
       - $setup_ftp_server
-    env:
     cmds:
       - defer: "{{ .CONTAINER_RUNTIME }} rm -f $({{ .CONTAINER_ID }})"
       - go test -v ./...
