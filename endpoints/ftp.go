@@ -8,7 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func FtpSync(c *gin.Context) {
+// TODO: also rename file to sync.go
+func Sync(c *gin.Context) {
 	client, err := ftp.Client()
 	if err != nil {
 		log.Error().Msgf("Unable to create FTP client with error => %s", err)
