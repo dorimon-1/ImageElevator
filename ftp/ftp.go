@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -48,17 +49,18 @@ func Connect(URL string, Username string, Password string) (*goftp.Client, error
 }
 
 func Pull(client *goftp.Client, files []string) ([]string, error) {
-	filePaths := make([]string, 0)
+	filesPulled := make([]string, 0)
 	workingDir, err := os.Getwd()
 
 	if err != nil {
 		return nil, err
 	}
 
-	for _, file := range files {
-		log.Printf("Pulling file: %s", file)
+	for _, remote_file := range files {
+		local_file := fmt.Sprintf("%s/%s", workingDir, filepath.Base(remote_file))
+		log.Info().Msgf("Pulling file from %s to %s", remote_file, local_file)
 
-		buffer, err := os.Create(file)
+		buffer, err := os.Create(local_file)
 		if err != nil {
 			log.Error().Msgf("Failed to create file with error => %s", err)
 			// TODO: Q: do we want to use return here?
@@ -66,21 +68,21 @@ func Pull(client *goftp.Client, files []string) ([]string, error) {
 		}
 		defer buffer.Close()
 
-		if err = client.Retrieve(file, buffer); err != nil {
+		if err = client.Retrieve(remote_file, buffer); err != nil {
 			log.Error().Msgf("Failed to retreive file with error => %s", err)
 			continue
 		}
-		// TODO: CHECK: if needed becouse list already returns full file path
-		local_file := workingDir + "/" + file
-		// TODO: Move to seperate function becouse decopress not always needed when pulling e.g. voice station
-		if decompressed, err := Decompress(local_file); err != nil {
-			log.Error().Msgf("Failed to decompress file '%s' with error => %s", local_file, err)
-		} else {
-			filePaths = append(filePaths, decompressed)
-		}
+		filesPulled = append(filesPulled, local_file)
+
+		// // TODO: Move to seperate function becouse decopress not always needed when pulling e.g. voice station
+		// local_file := workingDir + "/" + file
+		// if decompressed, err := Decompress(local_file); err != nil {
+		// 	log.Error().Msgf("Failed to decompress file '%s' with error => %s", local_file, err)
+		// } else {
+		// }
 	}
 
-	return filePaths, nil
+	return filesPulled, nil
 }
 
 func Decompress(inputFilePath string) (string, error) {
