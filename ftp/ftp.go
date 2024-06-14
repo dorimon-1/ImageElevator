@@ -58,7 +58,7 @@ func Pull(client *goftp.Client, files []string) ([]string, error) {
 
 	for _, remote_file := range files {
 		local_file := fmt.Sprintf("%s/%s", workingDir, filepath.Base(remote_file))
-		log.Info().Msgf("Pulling file from %s to %s", remote_file, local_file)
+		log.Info().Msgf("Pulling file '%s' from remote to %s", remote_file, local_file)
 
 		buffer, err := os.Create(local_file)
 		if err != nil {
