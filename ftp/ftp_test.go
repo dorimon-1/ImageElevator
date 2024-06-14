@@ -129,7 +129,10 @@ func TestPull(t *testing.T) {
 		t.Errorf("Failed to write string to temporary test file => %v", err)
 	}
 	// No idea why i need this but it the test doesnt work without it
-	test_file.Seek(0, 0)
+	_, err = test_file.Seek(0, 0)
+	if err != nil {
+		t.Errorf("Failed Seek func on test file with error => %v", err)
+	}
 
 	err = client.Store("remote-file", test_file)
 	if err != nil {
