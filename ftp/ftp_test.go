@@ -81,6 +81,14 @@ func setupClient(t *testing.T) *goftp.Client {
 	}
 	return client
 }
+func closeConn(t *testing.T) {
+	err := client.Close()
+	if err != nil {
+		t.Errorf("Failed to close connection => %v", err)
+	}
+	log.Info().Msg("Closing Connection...")
+	client = nil
+}
 func TestConnect(t *testing.T) {
 	client := setupClient(t)
 	if client == nil {
@@ -89,7 +97,10 @@ func TestConnect(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
+
 	client := setupClient(t)
+	defer closeConn(t)
+
 	testdir, err := client.Mkdir("test-dir")
 	if err != nil {
 		t.Errorf("Failed creating testdir for TestList => %v", err)
@@ -100,5 +111,46 @@ func TestList(t *testing.T) {
 	}
 	if !slices.Contains(test_list, testdir) {
 		t.Errorf("Test dir not found in FTP server")
+	}
+}
+
+func TestPull(t *testing.T) {
+
+	client := setupClient(t)
+	defer closeConn(t)
+
+	test_file, err := os.Create("local-file")
+	if err != nil {
+		t.Errorf("Failed to create temporary test file => %v", err)
+	}
+
+	_, err = test_file.WriteString("pull me")
+	if err != nil {
+		t.Errorf("Failed to write string to temporary test file => %v", err)
+	}
+	// No idea why i need this but it the test doesnt work without it
+	test_file.Seek(0, 0)
+
+	err = client.Store("remote-file", test_file)
+	if err != nil {
+		t.Errorf("Failed Storing test file on remote => %v", err)
+	}
+
+	pull_input := []string{"remote-file"}
+	pulled, err := ftp.Pull(client, pull_input)
+	if err != nil {
+		t.Errorf("Pulling from FTP directory failed with error => %v", err)
+	}
+
+	file, err := os.Open(pulled[0])
+	if err != nil {
+		t.Errorf("Could not open pulled file to check content => %v", err)
+	}
+	msg, err := io.ReadAll(file)
+	if err != nil {
+		t.Errorf("Could not read test file => %v", err)
+	}
+	if string(msg) != "pull me" {
+		t.Errorf("Test file was not pulled properly => %s", err)
 	}
 }
