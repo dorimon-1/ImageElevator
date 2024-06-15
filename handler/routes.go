@@ -8,10 +8,10 @@ import (
 )
 
 type Handler struct {
-	runner *runner.Runner
+	runner runner.Runner
 }
 
-func NewHandler(runner *runner.Runner) *Handler {
+func NewHandler(runner runner.Runner) *Handler {
 	return &Handler{
 		runner: runner,
 	}

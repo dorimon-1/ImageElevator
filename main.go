@@ -10,6 +10,7 @@ import (
 
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/docker"
+	"github.com/Kjone1/imageElevator/ftp"
 	"github.com/Kjone1/imageElevator/handler"
 	"github.com/Kjone1/imageElevator/runner"
 	"github.com/gin-gonic/gin"
@@ -45,7 +46,12 @@ func main() {
 
 	registryAdapter := docker.NewRegistry(&registryConfig)
 
-	runner := runner.NewRunner(ctx, registryAdapter, &runnerConfig, &registryConfig)
+	ftpClient, err := ftp.Client()
+	if err != nil {
+		log.Fatal().Msgf("Failed to connect to FTP server => %s", err)
+	}
+
+	runner := runner.NewDockerRunner(ctx, registryAdapter, ftpClient, &runnerConfig)
 	handler := handler.NewHandler(runner)
 
 	httpServer := serveHttp(server, handler)

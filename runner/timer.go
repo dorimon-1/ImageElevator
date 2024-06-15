@@ -4,7 +4,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *Runner) timerRoutine() {
+func (r *DockerRunner) timerRoutine() {
 	log.Debug().Msg("Timer routine started")
 	for {
 		select {
