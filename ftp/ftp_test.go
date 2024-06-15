@@ -77,8 +77,10 @@ func setupClient(t *testing.T) *goftp.Client {
 		if err != nil {
 			t.Errorf("Failed With FTP client setup => %v", err)
 		}
+
 		client = ftpClient
 	}
+
 	return client
 }
 func closeConn(t *testing.T) {
@@ -86,11 +88,16 @@ func closeConn(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to close connection => %v", err)
 	}
+
 	log.Info().Msg("Closing Connection...")
 	client = nil
+
 }
 func TestConnect(t *testing.T) {
+
 	client := setupClient(t)
+	defer closeConn(t)
+
 	if client == nil {
 		t.Error("Failed to Connect to FTP server")
 	}
@@ -116,31 +123,37 @@ func TestList(t *testing.T) {
 
 func TestPull(t *testing.T) {
 
+	const (
+		local_file_name string = "local_file"
+		remote_file     string = "remote_file"
+		test_msg        string = "pull_me"
+	)
+
 	client := setupClient(t)
 	defer closeConn(t)
 
-	test_file, err := os.Create("local-file")
+	local_file, err := os.Create(local_file_name)
 	if err != nil {
 		t.Errorf("Failed to create temporary test file => %v", err)
 	}
 
-	_, err = test_file.WriteString("pull me")
+	_, err = local_file.WriteString(test_msg)
 	if err != nil {
 		t.Errorf("Failed to write string to temporary test file => %v", err)
 	}
-	// No idea why i need this but it the test doesnt work without it
-	_, err = test_file.Seek(0, 0)
+	// To know why seek is need here check out the pr discussion
+	// https: //github.com/KJone1/ImageElevator/pull/19#discussion_r1640277743
+	_, err = local_file.Seek(0, 0)
 	if err != nil {
 		t.Errorf("Failed Seek func on test file with error => %v", err)
 	}
 
-	err = client.Store("remote-file", test_file)
+	err = client.Store(remote_file, local_file)
 	if err != nil {
 		t.Errorf("Failed Storing test file on remote => %v", err)
 	}
 
-	pull_input := []string{"remote-file"}
-	pulled, err := ftp.Pull(client, pull_input)
+	pulled, err := ftp.Pull(client, remote_file)
 	if err != nil {
 		t.Errorf("Pulling from FTP directory failed with error => %v", err)
 	}
@@ -153,7 +166,7 @@ func TestPull(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not read test file => %v", err)
 	}
-	if string(msg) != "pull me" {
+	if string(msg) != test_msg {
 		t.Errorf("Test file was not pulled properly => %s", err)
 	}
 }

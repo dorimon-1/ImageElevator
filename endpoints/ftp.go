@@ -26,7 +26,7 @@ func Sync(c *gin.Context) {
 		return
 	}
 
-	_, err = ftp.Pull(client, images)
+	_, err = ftp.Pull(client, images...)
 	if err != nil {
 		log.Error().Msgf("Pulling images from FTP server failed with error => %s", err)
 	}

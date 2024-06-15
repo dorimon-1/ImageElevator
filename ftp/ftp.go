@@ -30,11 +30,11 @@ func Client() (*goftp.Client, error) {
 	return client, nil
 }
 
-func Connect(URL string, userName string, passWord string) (*goftp.Client, error) {
+func Connect(URL string, username string, password string) (*goftp.Client, error) {
 
 	ftpConfig := goftp.Config{
-		User:               userName,
-		Password:           passWord,
+		User:               username,
+		Password:           password,
 		ConnectionsPerHost: 10,
 		Timeout:            10 * time.Second,
 		Logger:             nil,
@@ -48,7 +48,7 @@ func Connect(URL string, userName string, passWord string) (*goftp.Client, error
 	return client, nil
 }
 
-func Pull(client *goftp.Client, files []string) ([]string, error) {
+func Pull(client *goftp.Client, files ...string) ([]string, error) {
 	filesPulled := make([]string, 0)
 	workingDir, err := os.Getwd()
 
