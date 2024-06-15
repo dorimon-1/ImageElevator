@@ -60,7 +60,7 @@ tasks:
         msg: "CONTAINER_RUNTIME Not Found, Cant run FTP unit tests"
     cmds:
       - |
-          {{ .CONTAINER_RUNTIME }} run -d -p 21:21 \
+          {{ .CONTAINER_RUNTIME }} run -d -p 21:21 -p 21000-21010:21000-21010 \
           --env USERS="testuser|testpassword|/" \
           --env ADDRESS=0.0.0.0 \
           --name ftp_server \
@@ -76,12 +76,7 @@ tasks:
     desc: Run unit tests.
     deps:
       - $setup_ftp_server
-    env:
-      FTP_SERVER_URL: localhost
-      FTP_USERNAME: testuser
-      FTP_PASSWORD: testpassword
-      FTP_SERVER_PATH: /
     cmds:
       - defer: "{{ .CONTAINER_RUNTIME }} rm -f $({{ .CONTAINER_ID }})"
-      - go test -v -failfast -skip=ftp_test ./...
+      - go test -v ./...
 

@@ -24,7 +24,7 @@ func main() {
 	v1 := server.Group("/v1")
 
 	v1.GET("/ping", endpoints.Health)
-	v1.GET("/sync", endpoints.FtpSync)
+	v1.GET("/sync", endpoints.Sync)
 
 	if err := server.Run(); err != nil {
 		log.Fatal().Msgf("failed to start server: %s", err)
