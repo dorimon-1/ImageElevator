@@ -23,7 +23,7 @@ var ftpClient *GoFTP
 func Client() (*GoFTP, error) {
 	if ftpClient == nil {
 		config := config.FtpConfig()
-		goFTPClient, err := connect(config.FtpServerURL, config.FtpUsername, config.FtpPassword)
+		goFTPClient, err := Connect(config.FtpServerURL, config.FtpUsername, config.FtpPassword)
 		if err != nil {
 			return nil, err
 		}
@@ -36,7 +36,7 @@ func Client() (*GoFTP, error) {
 	return ftpClient, nil
 }
 
-func connect(URL string, username string, password string) (*goftp.Client, error) {
+func Connect(URL string, username string, password string) (*goftp.Client, error) {
 	ftpConfig := goftp.Config{
 		User:               username,
 		Password:           password,
