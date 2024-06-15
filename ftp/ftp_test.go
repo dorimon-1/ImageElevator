@@ -141,7 +141,7 @@ func TestPull(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to write string to temporary test file => %v", err)
 	}
-	// To know why seek is need here check out the pr discussion
+	// If you want to know why seek is needed here check out the pr discussion
 	// https: //github.com/KJone1/ImageElevator/pull/19#discussion_r1640277743
 	_, err = local_file.Seek(0, 0)
 	if err != nil {
