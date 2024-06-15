@@ -73,12 +73,6 @@ func Pull(client *goftp.Client, files ...string) ([]string, error) {
 		}
 		filesPulled = append(filesPulled, local_file)
 
-		// // TODO: Move to seperate function becouse decopress not always needed when pulling e.g. voice station
-		// local_file := workingDir + "/" + file
-		// if decompressed, err := Decompress(local_file); err != nil {
-		// 	log.Error().Msgf("Failed to decompress file '%s' with error => %s", local_file, err)
-		// } else {
-		// }
 	}
 
 	return filesPulled, nil
