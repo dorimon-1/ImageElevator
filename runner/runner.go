@@ -20,19 +20,14 @@ type Runner struct {
 	registryAdapter docker.RegistryAdapter
 }
 
-func NewRunner(ctx context.Context) *Runner {
-	runnerConf := config.RunnerConfig()
-	rate := runnerConf.SampleRate * time.Minute
-	timer := time.NewTimer(rate)
+func NewRunner(ctx context.Context, registryAdapter docker.RegistryAdapter, runnerConfig *config.RunnerConfiguration, registryConfig *config.RegistryConfiguration) *Runner {
+	timer := time.NewTimer(runnerConfig.SampleRateInMinutes)
 	runUploadChan := make(chan interface{}, 1)
 	resetTimerChan := make(chan interface{})
 
-	registryConfig := config.RegistryConfig()
-	registryAdapter := docker.NewRegistry(&registryConfig)
-
 	runner := &Runner{
 		ctx:             ctx,
-		sampleRate:      rate,
+		sampleRate:      runnerConfig.SampleRateInMinutes,
 		timer:           timer,
 		runUploadChan:   runUploadChan,
 		resetTimerChan:  resetTimerChan,
@@ -61,10 +56,11 @@ func (r *Runner) uploaderRoutine() {
 		select {
 		case <-r.runUploadChan:
 			if err := r.uploadImages(); err != nil {
+				//FIXME: This is stupid!!! make it not an error somehow
 				if err.Error() == "no new images were found" {
 					log.Debug().Msg(err.Error())
 				} else {
-					log.Err(err).Msgf("failed to upload images from Image Uploader")
+					log.Err(err).Msgf("Failed to upload images from Image Uploader")
 				}
 			}
 			r.resetTimerChan <- nil
@@ -72,7 +68,7 @@ func (r *Runner) uploaderRoutine() {
 		case <-r.ctx.Done():
 			log.Debug().Msg("Closing Image Uploader")
 			if err := ftp.Close(); err != nil {
-				log.Err(err).Msg("failed to close connection")
+				log.Err(err).Msg("Failed to close connection")
 			}
 
 			close(r.runUploadChan)

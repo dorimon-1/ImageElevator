@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Kjone1/imageElevator/config"
+	"github.com/Kjone1/imageElevator/docker"
 	"github.com/Kjone1/imageElevator/handler"
 	"github.com/Kjone1/imageElevator/runner"
 	"github.com/gin-gonic/gin"
@@ -39,14 +40,16 @@ func main() {
 
 	server := gin.Default()
 
-	v1 := server.Group("/v1")
-	runner := runner.NewRunner(ctx)
+	registryConfig := config.RegistryConfig()
+	runnerConfig := config.RunnerConfig()
+
+	registryAdapter := docker.NewRegistry(&registryConfig)
+
+	runner := runner.NewRunner(ctx, registryAdapter, &runnerConfig, &registryConfig)
 	handler := handler.NewHandler(runner)
 
-	v1.GET("/ping", handler.Health)
-	v1.GET("/sync", handler.Sync)
+	httpServer := serveHttp(server, handler)
 
-	httpServer := serverHttp(server)
 	<-ctx.Done()
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -59,12 +62,16 @@ func main() {
 	log.Info().Msg("Server exiting")
 }
 
-func serverHttp(handler http.Handler) *http.Server {
+func serveHttp(ginEngine *gin.Engine, handler *handler.Handler) *http.Server {
+
+	v1 := ginEngine.Group("/v1")
+	v1.GET("/ping", handler.Health)
+	v1.GET("/sync", handler.Sync)
 
 	port := config.ReadEnvWithDefault("PORT", "8080")
 	httpServer := &http.Server{
 		Addr:    ":" + port,
-		Handler: handler,
+		Handler: ginEngine,
 	}
 
 	go func() {

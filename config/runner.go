@@ -9,9 +9,9 @@ import (
 )
 
 type RunnerConfiguration struct {
-	SampleRate time.Duration
-	Timer      *time.Timer
-	RunnerChan chan interface{}
+	SampleRateInMinutes time.Duration
+	Timer               *time.Timer
+	RunnerChan          chan interface{}
 }
 
 var runnerConfig *RunnerConfiguration
@@ -33,6 +33,6 @@ func readRunnerConfig() *RunnerConfiguration {
 	}
 
 	return &RunnerConfiguration{
-		SampleRate: time.Duration(sampleRate),
+		SampleRateInMinutes: time.Duration(sampleRate) * time.Minute,
 	}
 }
