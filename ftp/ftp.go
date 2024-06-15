@@ -124,7 +124,7 @@ func List(client *goftp.Client, path string, pattern string) ([]string, error) {
 
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
-		return nil, fmt.Errorf("Failed building regex => %s", err)
+		return nil, fmt.Errorf("failed building regex => %s", err)
 	}
 
 	var files_found []string
