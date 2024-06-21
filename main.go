@@ -43,6 +43,7 @@ func main() {
 
 	registryConfig := config.RegistryConfig()
 	runnerConfig := config.RunnerConfig()
+	ftpConfig := config.FtpConfig()
 
 	registryAdapter := docker.NewRegistry(&registryConfig)
 
@@ -51,9 +52,10 @@ func main() {
 		log.Fatal().Msgf("Failed to connect to FTP server => %s", err)
 	}
 
-	runner := runner.NewDockerRunner(ctx, registryAdapter, ftpClient, &runnerConfig)
+	runner := runner.NewDockerRunner(ctx, registryAdapter, ftpClient, &runnerConfig, ftpConfig.FtpServerPath, "")
 	handler := handler.NewHandler(runner)
 
+	runner.Start()
 	httpServer := serveHttp(server, handler)
 
 	<-ctx.Done()

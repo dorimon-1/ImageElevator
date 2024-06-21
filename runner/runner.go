@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -45,15 +44,5 @@ func uploaderRoutine(r *DockerRunner) {
 			close(r.resetTimerChan)
 			return
 		}
-	}
-}
-
-func (r *DockerRunner) TriggerUpload() error {
-	select {
-	case r.runUploadChan <- nil:
-		return nil
-	default:
-		return errors.New("too many requests")
-
 	}
 }

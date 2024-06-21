@@ -2,6 +2,8 @@ package runner
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Kjone1/imageElevator/config"
@@ -22,7 +24,7 @@ type DockerRunner struct {
 	filePattern     string
 }
 
-func NewDockerRunner(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, runnerConfig *config.RunnerConfiguration) *DockerRunner {
+func NewDockerRunner(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, runnerConfig *config.RunnerConfiguration, workingPath, filePattern string) *DockerRunner {
 	timer := time.NewTimer(runnerConfig.SampleRateInMinutes)
 	runUploadChan := make(chan interface{}, 1)
 	resetTimerChan := make(chan interface{})
@@ -32,8 +34,11 @@ func NewDockerRunner(ctx context.Context, registryAdapter docker.RegistryAdapter
 		sampleRate:      runnerConfig.SampleRateInMinutes,
 		timer:           timer,
 		runUploadChan:   runUploadChan,
+		ftpClient:       ftpClient,
 		resetTimerChan:  resetTimerChan,
 		registryAdapter: registryAdapter,
+		workingPath:     workingPath,
+		filePattern:     filePattern,
 	}
 
 	return runner
@@ -62,6 +67,7 @@ func (r *DockerRunner) uploadImages() (int, error) {
 }
 
 func (r *DockerRunner) pullFiles() ([]string, error) {
+	fmt.Println("Uploading..")
 	remoteFiles, err := r.ftpClient.List(r.workingPath, r.filePattern)
 	if err != nil {
 		log.Err(err).Msg("Reading FTP directory failed with error")
@@ -79,6 +85,16 @@ func (r *DockerRunner) pullFiles() ([]string, error) {
 	}
 
 	return localFiles, nil
+}
+
+func (r *DockerRunner) TriggerUpload() error {
+	select {
+	case r.runUploadChan <- nil:
+		return nil
+	default:
+		return errors.New("too many requests")
+
+	}
 }
 
 // TODO: Make a function receives a list of tar files and returns a docker.Image (ImageName, Tag, TarPath) by regex
