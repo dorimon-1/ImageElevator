@@ -1,29 +1,50 @@
 package runner
 
 import (
+	"context"
+	"errors"
+	"time"
+
 	"github.com/rs/zerolog/log"
 )
 
-type Runner interface {
-	uploadImages() (int, error)
-	pullFiles() ([]string, error)
-	Start()
-	TriggerUpload() error
+type BasicRunner struct {
+	ctx            context.Context
+	sampleRate     time.Duration
+	timer          *time.Timer
+	runUploadChan  chan any
+	resetTimerChan chan any
 }
 
-func uploaderRoutine(r *DockerRunner) {
+type Runner interface {
+	basicRunner() *BasicRunner
+	Stop() error
+	uploadImages() (int, error)
+	pullFiles() ([]string, error)
+}
+
+func TriggerUpload(r Runner) error {
+	select {
+	case r.basicRunner().runUploadChan <- nil:
+		return nil
+	default:
+		return errors.New("too many requests")
+	}
+}
+
+func Start(r Runner) {
+	go timerRoutine(r)
+	go uploaderRoutine(r)
+}
+
+func uploaderRoutine(r Runner) {
 	log.Debug().Msg("Image uploader routine started")
 	for {
 		select {
-		case <-r.runUploadChan:
+		case <-r.basicRunner().runUploadChan:
 			imagesCount, err := r.uploadImages()
 			if err != nil {
-				//FIXME: This is stupid!!! make it not an error somehow
-				if err.Error() == "no new images were found" {
-					log.Debug().Msg(err.Error())
-				} else {
-					log.Err(err).Msgf("Failed to upload images from Image Uploader")
-				}
+				log.Error().Msgf("Failed to upload images from Image Uploader => %s", err)
 			}
 
 			if imagesCount > 0 {
@@ -32,16 +53,12 @@ func uploaderRoutine(r *DockerRunner) {
 				log.Debug().Msg("No images uploaded")
 			}
 
-			r.resetTimerChan <- nil
+			r.basicRunner().resetTimerChan <- nil
 
-		case <-r.ctx.Done():
+		case <-r.basicRunner().ctx.Done():
 			log.Debug().Msg("Closing Image Uploader")
-			if err := r.ftpClient.Close(); err != nil {
-				log.Err(err).Msg("Failed to close connection")
-			}
-
-			close(r.runUploadChan)
-			close(r.resetTimerChan)
+			close(r.basicRunner().runUploadChan)
+			close(r.basicRunner().resetTimerChan)
 			return
 		}
 	}

@@ -4,22 +4,22 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *DockerRunner) timerRoutine() {
+func timerRoutine(r Runner) {
 	log.Debug().Msg("Timer routine started")
 	for {
 		select {
-		case <-r.timer.C:
+		case <-r.basicRunner().timer.C:
 			log.Debug().Msg("triggering an upload via timer")
-			_ = r.TriggerUpload()
+			_ = TriggerUpload(r)
 
-		case <-r.resetTimerChan:
+		case <-r.basicRunner().resetTimerChan:
 			log.Debug().Msg("Resetting timer")
-			if !r.timer.Stop() && len(r.timer.C) > 0 {
-				<-r.timer.C
+			if !r.basicRunner().timer.Stop() && len(r.basicRunner().timer.C) > 0 {
+				<-r.basicRunner().timer.C
 			}
-			r.timer.Reset(r.sampleRate)
-		case <-r.ctx.Done():
-			r.timer.Stop()
+			r.basicRunner().timer.Reset(r.basicRunner().sampleRate)
+		case <-r.basicRunner().ctx.Done():
+			r.basicRunner().timer.Stop()
 			log.Debug().Msg("Stopping timer...")
 			return
 		}

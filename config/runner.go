@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -10,8 +9,6 @@ import (
 
 type RunnerConfiguration struct {
 	SampleRateInMinutes time.Duration
-	Timer               *time.Timer
-	RunnerChan          chan interface{}
 }
 
 var runnerConfig *RunnerConfiguration
@@ -28,7 +25,7 @@ func readRunnerConfig() *RunnerConfiguration {
 	sampleRateString := ReadEnvWithDefault("SAMPLE_RATE_IN_MINUTES", "15")
 	sampleRate, err := strconv.Atoi(sampleRateString)
 	if err != nil {
-		log.Err(fmt.Errorf("%s is not an integer", sampleRateString)).Msgf("failed to convert sample rate to int")
+		log.Error().Msgf("failed to convert sample rate to int => %s", err)
 		sampleRate = 15
 	}
 

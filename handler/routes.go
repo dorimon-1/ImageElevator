@@ -18,7 +18,7 @@ func NewHandler(runner runner.Runner) *Handler {
 }
 
 func (h *Handler) Sync(c *gin.Context) {
-	if err := h.runner.TriggerUpload(); err != nil {
+	if err := runner.TriggerUpload(h.runner); err != nil {
 		c.String(http.StatusTooManyRequests, err.Error())
 		return
 	}

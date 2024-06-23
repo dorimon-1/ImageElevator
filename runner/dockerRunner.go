@@ -2,7 +2,6 @@ package runner
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -13,11 +12,7 @@ import (
 )
 
 type DockerRunner struct {
-	ctx             context.Context
-	sampleRate      time.Duration
-	timer           *time.Timer
-	runUploadChan   chan interface{}
-	resetTimerChan  chan interface{}
+	BasicRunner
 	registryAdapter docker.RegistryAdapter
 	ftpClient       ftp.FTPClient
 	workingPath     string
@@ -26,16 +21,18 @@ type DockerRunner struct {
 
 func NewDockerRunner(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, runnerConfig *config.RunnerConfiguration, workingPath, filePattern string) *DockerRunner {
 	timer := time.NewTimer(runnerConfig.SampleRateInMinutes)
-	runUploadChan := make(chan interface{}, 1)
-	resetTimerChan := make(chan interface{})
+	runUploadChan := make(chan any, 1)
+	resetTimerChan := make(chan any)
 
 	runner := &DockerRunner{
-		ctx:             ctx,
-		sampleRate:      runnerConfig.SampleRateInMinutes,
-		timer:           timer,
-		runUploadChan:   runUploadChan,
+		BasicRunner: BasicRunner{
+			ctx:            ctx,
+			sampleRate:     runnerConfig.SampleRateInMinutes,
+			timer:          timer,
+			runUploadChan:  runUploadChan,
+			resetTimerChan: resetTimerChan,
+		},
 		ftpClient:       ftpClient,
-		resetTimerChan:  resetTimerChan,
 		registryAdapter: registryAdapter,
 		workingPath:     workingPath,
 		filePattern:     filePattern,
@@ -44,9 +41,16 @@ func NewDockerRunner(ctx context.Context, registryAdapter docker.RegistryAdapter
 	return runner
 }
 
-func (r *DockerRunner) Start() {
-	go r.timerRoutine()
-	go uploaderRoutine(r)
+func (r *DockerRunner) basicRunner() *BasicRunner {
+	return &r.BasicRunner
+}
+
+func (r *DockerRunner) Stop() error {
+	if err := r.ftpClient.Close(); err != nil {
+		log.Error().Msgf("Failed to close connection => %s", err)
+		return err
+	}
+	return nil
 }
 
 func (r *DockerRunner) uploadImages() (int, error) {
@@ -59,7 +63,7 @@ func (r *DockerRunner) uploadImages() (int, error) {
 
 	for i := 0; i < len(images); i++ {
 		if err := r.registryAdapter.PushTar(r.ctx, &images[i]); err != nil {
-			log.Err(err).Msgf("failed to push %s to registry", images[i].TarPath)
+			log.Error().Msgf("failed to push %s to registry => %s", images[i].TarPath, err)
 		}
 	}
 
@@ -70,7 +74,7 @@ func (r *DockerRunner) pullFiles() ([]string, error) {
 	fmt.Println("Uploading..")
 	remoteFiles, err := r.ftpClient.List(r.workingPath, r.filePattern)
 	if err != nil {
-		log.Err(err).Msg("Reading FTP directory failed with error")
+		log.Error().Msgf("Reading FTP directory failed with error => %s", err)
 		return nil, err
 	}
 
@@ -80,21 +84,11 @@ func (r *DockerRunner) pullFiles() ([]string, error) {
 
 	localFiles, err := r.ftpClient.Pull(remoteFiles...)
 	if err != nil {
-		log.Err(err).Msg("Pulling files from FTP directory")
+		log.Error().Msgf("Pulling files from FTP directory => %s", err)
 		return nil, err
 	}
 
 	return localFiles, nil
-}
-
-func (r *DockerRunner) TriggerUpload() error {
-	select {
-	case r.runUploadChan <- nil:
-		return nil
-	default:
-		return errors.New("too many requests")
-
-	}
 }
 
 // TODO: Make a function receives a list of tar files and returns a docker.Image (ImageName, Tag, TarPath) by regex
