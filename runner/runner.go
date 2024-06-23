@@ -57,6 +57,7 @@ func uploaderRoutine(r Runner) {
 
 		case <-r.basicRunner().ctx.Done():
 			log.Debug().Msg("Closing Image Uploader")
+			_ = r.Stop()
 			close(r.basicRunner().runUploadChan)
 			close(r.basicRunner().resetTimerChan)
 			return
