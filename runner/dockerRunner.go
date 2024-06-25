@@ -3,7 +3,9 @@ package runner
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/docker"
@@ -91,8 +93,29 @@ func (r *DockerRunner) pullFiles() ([]string, error) {
 	return localFiles, nil
 }
 
-// TODO: Make a function receives a list of tar files and returns a docker.Image (ImageName, Tag, TarPath) by regex
 func tarsToImages(tarFiles []string) []docker.Image {
-	_ = tarFiles
-	return nil
+	images := make([]docker.Image, len(tarFiles))
+	for i, file := range tarFiles {
+		trimmedFile := strings.TrimSuffix(file, ".tar")
+		trimmedFile = strings.TrimSuffix(trimmedFile, "-docker")
+		trimmedFile = strings.TrimPrefix(trimmedFile, "int-")
+		imageName, imageTag := splitTarFile(trimmedFile)
+		image := docker.Image{
+			Name:    imageName,
+			Tag:     imageTag,
+			TarPath: file,
+		}
+		images[i] = image
+	}
+	return images
+}
+
+func splitTarFile(s string) (string, string) {
+	for i := 0; i < len(s); i++ {
+		r := rune(s[i])
+		if unicode.IsNumber(r) {
+			return s[0 : i-1], s[i:]
+		}
+	}
+	return "", ""
 }
