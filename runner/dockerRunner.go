@@ -14,7 +14,7 @@ import (
 )
 
 type DockerRunner struct {
-	BasicRunner
+	RunnerBase
 	registryAdapter docker.RegistryAdapter
 	ftpClient       ftp.FTPClient
 	workingPath     string
@@ -27,7 +27,7 @@ func NewDockerRunner(ctx context.Context, registryAdapter docker.RegistryAdapter
 	resetTimerChan := make(chan any)
 
 	runner := &DockerRunner{
-		BasicRunner: BasicRunner{
+		RunnerBase: RunnerBase{
 			ctx:            ctx,
 			sampleRate:     runnerConfig.SampleRateInMinutes,
 			timer:          timer,
@@ -43,8 +43,8 @@ func NewDockerRunner(ctx context.Context, registryAdapter docker.RegistryAdapter
 	return runner
 }
 
-func (r *DockerRunner) basicRunner() *BasicRunner {
-	return &r.BasicRunner
+func (r *DockerRunner) runnerBase() *RunnerBase {
+	return &r.RunnerBase
 }
 
 func (r *DockerRunner) Stop() error {
