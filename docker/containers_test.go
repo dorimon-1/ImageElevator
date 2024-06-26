@@ -1,6 +1,7 @@
 package docker_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -30,17 +31,24 @@ func TestCheckAuth(t *testing.T) {
 }
 
 func TestPull(t *testing.T) {
+	ctx := context.Background()
 	tarPath := ".."
 
-	if err := imageRegistry.Pull(imageName, tag, tarPath); err != nil {
+	if err := imageRegistry.Pull(ctx, imageName, tag, tarPath); err != nil {
 		t.Fatalf("pulling image: %s", err)
 	}
 }
 
 func TestPush(t *testing.T) {
+	ctx := context.Background()
 	tarPath := fmt.Sprintf("../%s-%s", imageName, tag)
+	image := &docker.Image{
+		Name:    imageName,
+		Tag:     tag,
+		TarPath: tarPath,
+	}
 
-	if err := imageRegistry.PushTar(tarPath, imageName, tag); err != nil {
+	if err := imageRegistry.PushTar(ctx, image); err != nil {
 		t.Errorf("failed pushing: %v", err)
 	}
 

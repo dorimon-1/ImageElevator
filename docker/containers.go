@@ -16,6 +16,18 @@ type Container struct {
 	*config.RegistryConfiguration
 }
 
+type Image struct {
+	Name    string
+	Tag     string
+	TarPath string
+}
+
+func NewRegistry(config *config.RegistryConfiguration) RegistryAdapter {
+	return &Container{
+		RegistryConfiguration: config,
+	}
+}
+
 func (c *Container) CheckAuth() error {
 	return docker.CheckAuth(
 		context.Background(),
@@ -26,7 +38,7 @@ func (c *Container) CheckAuth() error {
 	)
 }
 
-func (c *Container) Pull(image, tag, targetPath string) error {
+func (c *Container) Pull(ctx context.Context, image, tag, targetPath string) error {
 	imgRef, err := parseDocker(c.Registry, c.Repository, image, tag)
 	if err != nil {
 		return err
@@ -37,25 +49,25 @@ func (c *Container) Pull(image, tag, targetPath string) error {
 		return err
 	}
 
-	if err := copyImage(imgRef, dstRef, c.SystemContext); err != nil {
+	if err := copyImage(ctx, imgRef, dstRef, c.SystemContext); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *Container) PushTar(tarPath, imageName, tag string) error {
-	dstRef, err := parseDocker(c.Registry, c.Repository, imageName, tag)
+func (c *Container) PushTar(ctx context.Context, image *Image) error {
+	dstRef, err := parseDocker(c.Registry, c.Repository, image.Name, image.Tag)
 	if err != nil {
 		return err
 	}
 
-	srcRef, err := parseTar(tarPath)
+	srcRef, err := parseTar(image.TarPath)
 	if err != nil {
 		return err
 	}
 
-	if err := copyImage(srcRef, dstRef, c.SystemContext); err != nil {
+	if err := copyImage(ctx, srcRef, dstRef, c.SystemContext); err != nil {
 		return err
 	}
 
@@ -80,7 +92,7 @@ func parseDocker(registry, repository, imageName, tag string) (types.ImageRefere
 	return ref, nil
 }
 
-func copyImage(srcRef, dstRef types.ImageReference, sysCtx *types.SystemContext) error {
+func copyImage(ctx context.Context, srcRef, dstRef types.ImageReference, sysCtx *types.SystemContext) error {
 	policyCtx, err := signature.NewPolicyContext(&signature.Policy{
 		Default: []signature.PolicyRequirement{
 			signature.NewPRInsecureAcceptAnything(),
@@ -92,7 +104,7 @@ func copyImage(srcRef, dstRef types.ImageReference, sysCtx *types.SystemContext)
 
 	defer func() { _ = policyCtx.Destroy() }()
 
-	_, err = copy.Image(context.Background(), policyCtx, dstRef, srcRef, &copy.Options{
+	_, err = copy.Image(ctx, policyCtx, dstRef, srcRef, &copy.Options{
 		SourceCtx:      sysCtx,
 		DestinationCtx: sysCtx,
 	})

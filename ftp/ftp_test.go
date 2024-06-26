@@ -1,4 +1,4 @@
-package ftp_test
+package ftp
 
 import (
 	"bytes"
@@ -7,9 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Kjone1/imageElevator/ftp"
 	"github.com/rs/zerolog/log"
-	"github.com/secsy/goftp"
 	"github.com/ulikunitz/xz"
 )
 
@@ -50,7 +48,7 @@ func TestDecompress(t *testing.T) {
 	inputFile, cleanup := setupDecompress(t, testData)
 	defer cleanup()
 
-	decompressedFilePath, err := ftp.Decompress(inputFile)
+	decompressedFilePath, err := Decompress(inputFile)
 	if err != nil {
 		t.Fatal("Decompression failed:", err)
 	}
@@ -69,29 +67,28 @@ func TestDecompress(t *testing.T) {
 	}
 }
 
-var client *goftp.Client
+var goFTP *GoFTP
 
-func setupClient(t *testing.T) *goftp.Client {
-	if client == nil {
-		ftpClient, err := ftp.Connect("localhost", "testuser", "testpassword")
+func setupClient(t *testing.T) *GoFTP {
+	if goFTP == nil {
+		ftpClient, err := Connect("localhost", "testuser", "testpassword")
 		if err != nil {
 			t.Errorf("Failed With FTP client setup => %v", err)
 		}
 
-		client = ftpClient
+		goFTP = &GoFTP{client: ftpClient}
 	}
 
-	return client
+	return goFTP
 }
 func closeConn(t *testing.T) {
-	err := client.Close()
+	err := goFTP.client.Close()
 	if err != nil {
 		t.Errorf("Failed to close connection => %v", err)
 	}
 
 	log.Info().Msg("Closing Connection...")
-	client = nil
-
+	goFTP = nil
 }
 func TestConnect(t *testing.T) {
 
@@ -105,14 +102,14 @@ func TestConnect(t *testing.T) {
 
 func TestList(t *testing.T) {
 
-	client := setupClient(t)
+	goFTP := setupClient(t)
 	defer closeConn(t)
 
-	testdir, err := client.Mkdir("test-dir")
+	testdir, err := goFTP.client.Mkdir("test-dir")
 	if err != nil {
 		t.Errorf("Failed creating testdir for TestList => %v", err)
 	}
-	test_list, err := ftp.List(client, "/", "test.*")
+	test_list, err := goFTP.List("/", "test.*")
 	if err != nil {
 		t.Errorf("Reading FTP directory failed with error => %s", err)
 	}
@@ -129,7 +126,7 @@ func TestPull(t *testing.T) {
 		test_msg        string = "pull_me"
 	)
 
-	client := setupClient(t)
+	goFTP := setupClient(t)
 	defer closeConn(t)
 
 	local_file, err := os.Create(local_file_name)
@@ -148,12 +145,12 @@ func TestPull(t *testing.T) {
 		t.Errorf("Failed Seek func on test file with error => %v", err)
 	}
 
-	err = client.Store(remote_file, local_file)
+	err = goFTP.client.Store(remote_file, local_file)
 	if err != nil {
 		t.Errorf("Failed Storing test file on remote => %v", err)
 	}
 
-	pulled, err := ftp.Pull(client, remote_file)
+	pulled, err := goFTP.Pull(remote_file)
 	if err != nil {
 		t.Errorf("Pulling from FTP directory failed with error => %v", err)
 	}
