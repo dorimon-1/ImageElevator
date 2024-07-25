@@ -5,24 +5,31 @@ import (
 	"errors"
 	"time"
 
+	"github.com/Kjone1/imageElevator/ftp"
 	"github.com/rs/zerolog/log"
 )
 
 type RunnerBase struct {
 	ctx            context.Context
 	sampleRate     time.Duration
+	ftpClient      ftp.FTPClient
 	timer          *time.Timer
 	runUploadChan  chan any
 	resetTimerChan chan any
+	workingPath    string
+	filePattern    string
 }
 
-func NewRunnerBase(sampleRate time.Duration) RunnerBase {
+func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string) RunnerBase {
 	return RunnerBase{
 		ctx:            context.Background(),
 		sampleRate:     sampleRate,
+		ftpClient:      ftpClient,
 		timer:          time.NewTimer(sampleRate),
 		runUploadChan:  make(chan any, 1),
 		resetTimerChan: make(chan any),
+		workingPath:    workingPath,
+		filePattern:    filePattern,
 	}
 }
 
@@ -30,7 +37,6 @@ type Runner interface {
 	runnerBase() *RunnerBase
 	Stop() error
 	uploadImages() (int, error)
-	pullFiles() ([]string, error)
 }
 
 func TriggerUpload(r Runner) error {
