@@ -2,4 +2,8 @@ tmp
 go.sum
 .env
 imageElevator.exe
+imageElevator
 .vscode
+ftp/testfile
+ftp/local_file
+ftp/remote_file

@@ -9,6 +9,7 @@ import (
 
 type RunnerConfiguration struct {
 	SampleRateInMinutes time.Duration
+	TarRegex            string
 }
 
 var runnerConfig *RunnerConfiguration
@@ -29,7 +30,10 @@ func readRunnerConfig() *RunnerConfiguration {
 		sampleRate = 15
 	}
 
+	tarRegex := ReadEnvWithDefault("TAR_REGEX", "")
+
 	return &RunnerConfiguration{
 		SampleRateInMinutes: time.Duration(sampleRate) * time.Minute,
+		TarRegex:            tarRegex,
 	}
 }
