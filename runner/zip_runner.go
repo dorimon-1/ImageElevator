@@ -16,9 +16,11 @@ type ZipRunner struct {
 	destinationPath string
 }
 
+const ZIP_CACHE_FILE = "docker_runner.json"
+
 func NewZipRunner(ctx context.Context, ftpClient ftp.FTPClient, runnerConfig *config.RunnerConfiguration, workingPath, filePattern, destPath string) *ZipRunner {
 	return &ZipRunner{
-		RunnerBase:      NewRunnerBase(runnerConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern),
+		RunnerBase:      NewRunnerBase(runnerConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, loadCache(ZIP_CACHE_FILE)),
 		destinationPath: destPath,
 	}
 }
@@ -35,6 +37,12 @@ func (r *ZipRunner) uploadImages() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	go func(files []string) {
+		if err := saveCache(DOCKER_CACHE_FILE, files); err != nil {
+			log.Error().Msgf("Error saving to cache: %s", err)
+		}
+	}(zipFiles)
 
 	for _, file := range zipFiles {
 		fileName := path.Base(file)

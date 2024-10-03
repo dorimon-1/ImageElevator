@@ -2,7 +2,9 @@ package runner
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
 	"time"
 
 	"github.com/Kjone1/imageElevator/ftp"
@@ -18,9 +20,10 @@ type RunnerBase struct {
 	resetTimerChan chan any
 	workingPath    string
 	filePattern    string
+	uploadedFiles  []string
 }
 
-func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string) RunnerBase {
+func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string, uploadedFiles []string) RunnerBase {
 	return RunnerBase{
 		ctx:            context.Background(),
 		sampleRate:     sampleRate,
@@ -30,6 +33,7 @@ func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPat
 		resetTimerChan: make(chan any),
 		workingPath:    workingPath,
 		filePattern:    filePattern,
+		uploadedFiles:  make([]string, 0),
 	}
 }
 
@@ -51,6 +55,30 @@ func TriggerUpload(r Runner) error {
 func Start(r Runner) {
 	go timerRoutine(r)
 	go uploaderRoutine(r)
+}
+
+func loadCache(fileName string) []string {
+	data, err := os.ReadFile(fileName)
+	if err != nil {
+		log.Warn().Msgf("Couldn't find cache file %s creating one.", fileName)
+		return make([]string, 0)
+	}
+	var files []string
+	if err := json.Unmarshal(data, &files); err != nil {
+		log.Error().Msgf("Error reading file %s: %s", fileName, err)
+		return make([]string, 0)
+	}
+
+	return files
+}
+
+func saveCache(fileName string, files []string) error {
+	data, err := json.Marshal(files)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(fileName, data, 0644)
 }
 
 func uploaderRoutine(r Runner) {
