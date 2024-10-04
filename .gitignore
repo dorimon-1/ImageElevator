@@ -7,3 +7,4 @@ imageElevator
 ftp/testfile
 ftp/local_file
 ftp/remote_file
+runner/*.json
