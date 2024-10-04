@@ -4,12 +4,12 @@ import "testing"
 
 func TestWriteToCache(t *testing.T) {
 	fileName := "test_runner.json"
-	files := make([]string, 5)
-	files[0] = "Hello"
-	files[1] = "HelloWorld"
-	files[2] = "WorldHello"
-	files[3] = "ReaLWorld"
-	files[4] = "lolHello"
+	files := make(map[string]bool)
+	files["hello"] = true
+	files["helloWorld"] = true
+	files["helloworld"] = true
+	files["Worldhello"] = true
+	files["Hleohello"] = true
 
 	if err := saveCache(fileName, files); err != nil {
 		t.Error(err)

@@ -47,7 +47,10 @@ func (r *DockerRunner) uploadImages() (int, error) {
 	}
 
 	go func(files []string) {
-		if err := saveCache(DOCKER_CACHE_FILE, files); err != nil {
+		for i := range files {
+			r.uploadedFiles[files[i]] = true
+		}
+		if err := saveCache(DOCKER_CACHE_FILE, r.uploadedFiles); err != nil {
 			log.Error().Msgf("Error saving to cache: %s", err)
 		}
 	}(tarFiles)
@@ -64,7 +67,7 @@ func (r *DockerRunner) uploadImages() (int, error) {
 }
 
 func (r RunnerBase) pullFiles() ([]string, error) {
-	remoteFiles, err := r.ftpClient.List(r.workingPath, r.filePattern)
+	remoteFiles, err := r.ftpClient.List(r.workingPath, r.filePattern, r.uploadedFiles)
 	if err != nil {
 		log.Error().Msgf("Reading FTP directory failed with error => %s", err)
 		return nil, err

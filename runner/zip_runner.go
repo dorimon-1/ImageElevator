@@ -39,7 +39,10 @@ func (r *ZipRunner) uploadImages() (int, error) {
 	}
 
 	go func(files []string) {
-		if err := saveCache(DOCKER_CACHE_FILE, files); err != nil {
+		for i := range files {
+			r.uploadedFiles[files[i]] = true
+		}
+		if err := saveCache(ZIP_CACHE_FILE, r.uploadedFiles); err != nil {
 			log.Error().Msgf("Error saving to cache: %s", err)
 		}
 	}(zipFiles)

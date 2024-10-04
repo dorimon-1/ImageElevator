@@ -109,12 +109,33 @@ func TestList(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed creating testdir for TestList => %v", err)
 	}
-	test_list, err := goFTP.List("/", "test.*")
+	test_list, err := goFTP.List("/", "test.*", make(map[string]bool))
 	if err != nil {
 		t.Errorf("Reading FTP directory failed with error => %s", err)
 	}
 	if !slices.Contains(test_list, testdir) {
 		t.Errorf("Test dir not found in FTP server")
+	}
+}
+
+func TestListBannedFile(t *testing.T) {
+	goFTP := setupClient(t)
+	defer closeConn(t)
+
+	testdir, err := goFTP.client.Mkdir("test-dir-false")
+	if err != nil {
+		t.Errorf("Failed creating testdir for TestList => %v", err)
+	}
+
+	bannedFiles := make(map[string]bool)
+	bannedFiles["test-dir-false"] = true
+
+	test_list, err := goFTP.List("/", "test.*", bannedFiles)
+	if err != nil {
+		t.Errorf("Reading FTP directory failed with error => %s", err)
+	}
+	if slices.Contains(test_list, testdir) {
+		t.Errorf("Test dir should not be found")
 	}
 }
 

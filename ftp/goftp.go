@@ -91,7 +91,7 @@ func (f *GoFTP) Pull(files ...string) ([]string, error) {
 	return filesPulled, nil
 }
 
-func (f *GoFTP) List(path string, pattern string) ([]string, error) {
+func (f *GoFTP) List(path string, pattern string, bannedFiles map[string]bool) ([]string, error) {
 	if path != "/" {
 		path = strings.TrimSuffix(path, "/")
 	}
@@ -111,7 +111,7 @@ func (f *GoFTP) List(path string, pattern string) ([]string, error) {
 	for _, file := range files {
 		matched := regex.MatchString(file.Name())
 
-		if matched {
+		if matched && !isBanned(bannedFiles, file.Name()) {
 			log.Info().Msgf("Found file: %s", file.Name())
 			var full_file_path string
 			if path == "/" {
@@ -123,4 +123,8 @@ func (f *GoFTP) List(path string, pattern string) ([]string, error) {
 		}
 	}
 	return files_found, nil
+}
+
+func isBanned(bannedFiles map[string]bool, file string) bool {
+	return bannedFiles[file]
 }

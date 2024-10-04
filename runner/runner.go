@@ -20,10 +20,10 @@ type RunnerBase struct {
 	resetTimerChan chan any
 	workingPath    string
 	filePattern    string
-	uploadedFiles  []string
+	uploadedFiles  map[string]bool
 }
 
-func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string, uploadedFiles []string) RunnerBase {
+func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string, uploadedFiles map[string]bool) RunnerBase {
 	return RunnerBase{
 		ctx:            context.Background(),
 		sampleRate:     sampleRate,
@@ -33,7 +33,7 @@ func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPat
 		resetTimerChan: make(chan any),
 		workingPath:    workingPath,
 		filePattern:    filePattern,
-		uploadedFiles:  make([]string, 0),
+		uploadedFiles:  make(map[string]bool),
 	}
 }
 
@@ -57,22 +57,22 @@ func Start(r Runner) {
 	go uploaderRoutine(r)
 }
 
-func loadCache(fileName string) []string {
+func loadCache(fileName string) map[string]bool {
 	data, err := os.ReadFile(fileName)
 	if err != nil {
 		log.Warn().Msgf("Couldn't find cache file %s creating one.", fileName)
-		return make([]string, 0)
+		return make(map[string]bool)
 	}
-	var files []string
+	var files map[string]bool
 	if err := json.Unmarshal(data, &files); err != nil {
 		log.Error().Msgf("Error reading file %s: %s", fileName, err)
-		return make([]string, 0)
+		return make(map[string]bool)
 	}
 
 	return files
 }
 
-func saveCache(fileName string, files []string) error {
+func saveCache(fileName string, files map[string]bool) error {
 	data, err := json.Marshal(files)
 	if err != nil {
 		return err

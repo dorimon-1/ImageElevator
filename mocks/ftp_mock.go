@@ -13,7 +13,7 @@ func (m *MockFTPClient) Pull(files ...string) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *MockFTPClient) List(path, pattern string) ([]string, error) {
+func (m *MockFTPClient) List(path, pattern string, bannedFiles map[string]bool) ([]string, error) {
 	args := m.Called()
 	strings, ok := args.Get(0).([]string)
 	if !ok {
