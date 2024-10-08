@@ -3,22 +3,22 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Kjone1/imageElevator/runner"
+	"github.com/Kjone1/imageElevator/elevator"
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	runner runner.Runner
+	elevator elevator.Elevator
 }
 
-func NewHandler(runner runner.Runner) *Handler {
+func NewHandler(elevator elevator.Elevator) *Handler {
 	return &Handler{
-		runner: runner,
+		elevator: elevator,
 	}
 }
 
 func (h *Handler) Sync(c *gin.Context) {
-	if err := runner.TriggerUpload(h.runner); err != nil {
+	if err := elevator.TriggerUpload(h.elevator); err != nil {
 		c.String(http.StatusTooManyRequests, err.Error())
 		return
 	}

@@ -1,4 +1,4 @@
-package runner
+package elevator
 
 import (
 	"context"
@@ -11,28 +11,28 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type DockerRunner struct {
-	RunnerBase
+type DockerElevator struct {
+	BaseElevator
 	registryAdapter docker.RegistryAdapter
 }
 
-const DOCKER_CACHE_FILE = "docker_runner.json"
+const DOCKER_CACHE_FILE = "docker_elevator.json"
 
-func NewDockerRunner(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, runnerConfig *config.RunnerConfiguration, workingPath, filePattern string) *DockerRunner {
+func NewDockerElevator(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern string) *DockerElevator {
 	uploadedFiles := loadCache(DOCKER_CACHE_FILE)
-	runner := &DockerRunner{
-		RunnerBase:      NewRunnerBase(runnerConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, uploadedFiles),
+	elevator := &DockerElevator{
+		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, uploadedFiles),
 		registryAdapter: registryAdapter,
 	}
 
-	return runner
+	return elevator
 }
 
-func (r *DockerRunner) runnerBase() *RunnerBase {
-	return &r.RunnerBase
+func (r *DockerElevator) baseElevator() *BaseElevator {
+	return &r.BaseElevator
 }
 
-func (r *DockerRunner) Stop() error {
+func (r *DockerElevator) Stop() error {
 	if err := r.ftpClient.Close(); err != nil {
 		log.Error().Msgf("Failed to close connection => %s", err)
 		return err
@@ -40,7 +40,7 @@ func (r *DockerRunner) Stop() error {
 	return nil
 }
 
-func (r *DockerRunner) uploadImages() (int, error) {
+func (r *DockerElevator) uploadImages() (int, error) {
 	tarFiles, err := r.pullFiles()
 	if err != nil {
 		return 0, err
@@ -57,16 +57,23 @@ func (r *DockerRunner) uploadImages() (int, error) {
 
 	images := tarsToImages(tarFiles)
 
+	fails := 0
 	for i := 0; i < len(images); i++ {
 		if err := r.registryAdapter.PushTar(r.ctx, &images[i]); err != nil {
 			log.Error().Msgf("failed to push %s to registry => %s", images[i].TarPath, err)
+			fails--
+			continue
+		}
+
+		if err := r.registryAdapter.Sync(r.ctx, &images[i]); err != nil {
+			log.Error().Msgf("failed to sync %s:%s => %s", images[i].Name, images[i].Tag, err)
 		}
 	}
 
-	return len(images), nil
+	return len(images) - fails, nil
 }
 
-func (r RunnerBase) pullFiles() ([]string, error) {
+func (r BaseElevator) pullFiles() ([]string, error) {
 	remoteFiles, err := r.ftpClient.List(r.workingPath, r.filePattern, r.uploadedFiles)
 	if err != nil {
 		log.Error().Msgf("Reading FTP directory failed with error => %s", err)

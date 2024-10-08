@@ -1,4 +1,4 @@
-package runner
+package elevator
 
 import (
 	"context"
@@ -11,27 +11,27 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type ZipRunner struct {
-	RunnerBase
+type ZipElevator struct {
+	BaseElevator
 	destinationPath string
 }
 
-const ZIP_CACHE_FILE = "docker_runner.json"
+const ZIP_CACHE_FILE = "docker_elevator.json"
 
-func NewZipRunner(ctx context.Context, ftpClient ftp.FTPClient, runnerConfig *config.RunnerConfiguration, workingPath, filePattern, destPath string) *ZipRunner {
-	return &ZipRunner{
-		RunnerBase:      NewRunnerBase(runnerConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, loadCache(ZIP_CACHE_FILE)),
+func NewZipElevator(ctx context.Context, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern, destPath string) *ZipElevator {
+	return &ZipElevator{
+		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, loadCache(ZIP_CACHE_FILE)),
 		destinationPath: destPath,
 	}
 }
 
-func (r *ZipRunner) runnerBase() *RunnerBase {
-	return &r.RunnerBase
+func (r *ZipElevator) baseElevator() *BaseElevator {
+	return &r.BaseElevator
 }
-func (r *ZipRunner) Stop() error {
+func (r *ZipElevator) Stop() error {
 	return nil
 }
-func (r *ZipRunner) uploadImages() (int, error) {
+func (r *ZipElevator) uploadImages() (int, error) {
 	count := 0
 	zipFiles, err := r.pullFiles()
 	if err != nil {

@@ -1,9 +1,9 @@
-package runner
+package elevator
 
 import "testing"
 
 func TestWriteToCache(t *testing.T) {
-	fileName := "test_runner.json"
+	fileName := "test_elevator.json"
 	files := make(map[string]bool)
 	files["hello"] = true
 	files["helloWorld"] = true

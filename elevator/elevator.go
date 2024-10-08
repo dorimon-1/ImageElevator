@@ -1,4 +1,4 @@
-package runner
+package elevator
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type RunnerBase struct {
+type BaseElevator struct {
 	ctx            context.Context
 	sampleRate     time.Duration
 	ftpClient      ftp.FTPClient
@@ -23,8 +23,8 @@ type RunnerBase struct {
 	uploadedFiles  map[string]bool
 }
 
-func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string, uploadedFiles map[string]bool) RunnerBase {
-	return RunnerBase{
+func NewBaseElevator(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string, uploadedFiles map[string]bool) BaseElevator {
+	return BaseElevator{
 		ctx:            context.Background(),
 		sampleRate:     sampleRate,
 		ftpClient:      ftpClient,
@@ -37,22 +37,22 @@ func NewRunnerBase(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPat
 	}
 }
 
-type Runner interface {
-	runnerBase() *RunnerBase
+type Elevator interface {
+	baseElevator() *BaseElevator
 	Stop() error
 	uploadImages() (int, error)
 }
 
-func TriggerUpload(r Runner) error {
+func TriggerUpload(r Elevator) error {
 	select {
-	case r.runnerBase().runUploadChan <- nil:
+	case r.baseElevator().runUploadChan <- nil:
 		return nil
 	default:
 		return errors.New("too many requests")
 	}
 }
 
-func Start(r Runner) {
+func Start(r Elevator) {
 	go timerRoutine(r)
 	go uploaderRoutine(r)
 }
@@ -81,11 +81,11 @@ func saveCache(fileName string, files map[string]bool) error {
 	return os.WriteFile(fileName, data, 0644)
 }
 
-func uploaderRoutine(r Runner) {
+func uploaderRoutine(r Elevator) {
 	log.Debug().Msg("Image uploader routine started")
 	for {
 		select {
-		case <-r.runnerBase().runUploadChan:
+		case <-r.baseElevator().runUploadChan:
 			imagesCount, err := r.uploadImages()
 			if err != nil {
 				log.Error().Msgf("Failed to upload images from Image Uploader => %s", err)
@@ -97,15 +97,15 @@ func uploaderRoutine(r Runner) {
 				log.Debug().Msg("No images uploaded")
 			}
 
-			r.runnerBase().resetTimerChan <- nil
+			r.baseElevator().resetTimerChan <- nil
 
-		case <-r.runnerBase().ctx.Done():
+		case <-r.baseElevator().ctx.Done():
 			log.Debug().Msg("Closing Image Uploader")
 			if err := r.Stop(); err != nil {
-				log.Warn().Msgf("received an error while stopping runner => %s", err)
+				log.Warn().Msgf("received an error while stopping elevator => %s", err)
 			}
-			close(r.runnerBase().runUploadChan)
-			close(r.runnerBase().resetTimerChan)
+			close(r.baseElevator().runUploadChan)
+			close(r.baseElevator().resetTimerChan)
 			return
 		}
 	}

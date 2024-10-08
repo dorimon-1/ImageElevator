@@ -20,7 +20,7 @@ func init() {
 func LoadConfig() {
 	FtpConfig()
 	RegistryConfig()
-	RunnerConfig()
+	ElevatorConfig()
 }
 
 func ReadEnvWithDefault(key string, defaultValue string) string {

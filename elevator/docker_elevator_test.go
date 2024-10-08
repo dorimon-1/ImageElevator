@@ -1,4 +1,4 @@
-package runner
+package elevator
 
 import (
 	"context"
@@ -10,22 +10,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupRunner() (*DockerRunner, *mocks.MockFTPClient, *mocks.MockRegistry) {
+func setupElevator() (*DockerElevator, *mocks.MockFTPClient, *mocks.MockRegistry) {
 	ftpClient := new(mocks.MockFTPClient)
 	dockerRegistry := new(mocks.MockRegistry)
-	runnerConfig := &config.RunnerConfiguration{
+	elevatorConfig := &config.ElevatorConfiguration{
 		SampleRateInMinutes: 1,
 	}
 
-	runner := NewDockerRunner(context.Background(), dockerRegistry, ftpClient, runnerConfig, "", "")
-	return runner, ftpClient, dockerRegistry
+	elevator := NewDockerElevator(context.Background(), dockerRegistry, ftpClient, elevatorConfig, "", "")
+	return elevator, ftpClient, dockerRegistry
 }
 
 func TestUploadImagesNoNewImages(t *testing.T) {
 	expectedCount := 0
-	runner, ftpClient, _ := setupRunner()
+	elevator, ftpClient, _ := setupElevator()
 	ftpClient.On("List").Return(nil, nil)
-	count, err := runner.uploadImages()
+	count, err := elevator.uploadImages()
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedCount, count)
@@ -36,12 +36,13 @@ func TestUploadImagesViaTrigger(t *testing.T) {
 	foundFiles := make([]string, 1)
 	foundFiles[0] = "testfile.tar"
 
-	runner, ftpClient, registry := setupRunner()
+	elevator, ftpClient, registry := setupElevator()
 	ftpClient.On("List").Return(foundFiles, nil)
 	ftpClient.On("Pull").Return(foundFiles, nil)
 	registry.On("PushTar").Return(nil)
+	registry.On("Sync").Return(nil)
 
-	count, err := runner.uploadImages()
+	count, err := elevator.uploadImages()
 
 	assert.Nil(t, err)
 	assert.Equal(t, len(foundFiles), count)

@@ -7,22 +7,22 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type RunnerConfiguration struct {
+type ElevatorConfiguration struct {
 	SampleRateInMinutes time.Duration
 	TarRegex            string
 }
 
-var runnerConfig *RunnerConfiguration
+var elevatorConfig *ElevatorConfiguration
 
-func RunnerConfig() RunnerConfiguration {
-	if runnerConfig == nil {
-		runnerConfig = readRunnerConfig()
+func ElevatorConfig() ElevatorConfiguration {
+	if elevatorConfig == nil {
+		elevatorConfig = readElevatorConfig()
 	}
 
-	return *runnerConfig
+	return *elevatorConfig
 }
 
-func readRunnerConfig() *RunnerConfiguration {
+func readElevatorConfig() *ElevatorConfiguration {
 	sampleRateString := ReadEnvWithDefault("SAMPLE_RATE_IN_MINUTES", "15")
 	sampleRate, err := strconv.Atoi(sampleRateString)
 	if err != nil {
@@ -32,7 +32,7 @@ func readRunnerConfig() *RunnerConfiguration {
 
 	tarRegex := ReadEnvWithDefault("TAR_REGEX", "")
 
-	return &RunnerConfiguration{
+	return &ElevatorConfiguration{
 		SampleRateInMinutes: time.Duration(sampleRate) * time.Minute,
 		TarRegex:            tarRegex,
 	}

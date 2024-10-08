@@ -10,9 +10,9 @@ import (
 
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/docker"
+	"github.com/Kjone1/imageElevator/elevator"
 	"github.com/Kjone1/imageElevator/ftp"
 	"github.com/Kjone1/imageElevator/handler"
-	"github.com/Kjone1/imageElevator/runner"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -42,20 +42,21 @@ func main() {
 	server := gin.Default()
 
 	registryConfig := config.RegistryConfig()
-	runnerConfig := config.RunnerConfig()
+	elevatorConfig := config.ElevatorConfig()
 	ftpConfig := config.FtpConfig()
+	syncConfig := config.SyncConfig()
 
-	registryAdapter := docker.NewRegistry(&registryConfig)
+	registryAdapter := docker.NewRegistry(&registryConfig, syncConfig)
 
 	ftpClient, err := ftp.Client()
 	if err != nil {
 		log.Fatal().Msgf("Failed to connect to FTP server => %s", err)
 	}
 
-	dockerRunner := runner.NewDockerRunner(ctx, registryAdapter, ftpClient, &runnerConfig, ftpConfig.FtpServerPath, runnerConfig.TarRegex)
-	handler := handler.NewHandler(dockerRunner)
+	dockerElevator := elevator.NewDockerElevator(ctx, registryAdapter, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.TarRegex)
+	handler := handler.NewHandler(dockerElevator)
 
-	runner.Start(dockerRunner)
+	elevator.Start(dockerElevator)
 
 	httpServer := serveHttp(server, handler)
 

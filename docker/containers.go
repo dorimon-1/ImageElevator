@@ -10,10 +10,12 @@ import (
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
+	"github.com/rs/zerolog/log"
 )
 
 type Container struct {
 	*config.RegistryConfiguration
+	SyncRegistryConfigruation []config.RegistryConfiguration
 }
 
 type Image struct {
@@ -22,9 +24,10 @@ type Image struct {
 	TarPath string
 }
 
-func NewRegistry(config *config.RegistryConfiguration) RegistryAdapter {
+func NewRegistry(config *config.RegistryConfiguration, syncConfig []config.RegistryConfiguration) RegistryAdapter {
 	return &Container{
-		RegistryConfiguration: config,
+		RegistryConfiguration:     config,
+		SyncRegistryConfigruation: syncConfig,
 	}
 }
 
@@ -49,7 +52,7 @@ func (c *Container) Pull(ctx context.Context, image, tag, targetPath string) err
 		return err
 	}
 
-	if err := copyImage(ctx, imgRef, dstRef, c.SystemContext); err != nil {
+	if err := copyImage(ctx, imgRef, dstRef, c.SystemContext, c.SystemContext); err != nil {
 		return err
 	}
 
@@ -67,8 +70,29 @@ func (c *Container) PushTar(ctx context.Context, image *Image) error {
 		return err
 	}
 
-	if err := copyImage(ctx, srcRef, dstRef, c.SystemContext); err != nil {
+	if err := copyImage(ctx, srcRef, dstRef, c.SystemContext, c.SystemContext); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (c *Container) Sync(ctx context.Context, image *Image) error {
+	srcRef, err := parseDocker(c.Registry, c.Repository, image.Name, image.Tag)
+	if err != nil {
+		return err
+	}
+
+	for _, rc := range c.SyncRegistryConfigruation {
+		dstRef, err := parseDocker(rc.Repository, rc.Repository, image.Name, image.Tag)
+		if err != nil {
+			log.Error().Msgf("error parsing docker registry image %s:%s, registry %s: %s", image.Name, image.Tag, rc.Registry, err)
+			continue
+		}
+
+		if err := copyImage(ctx, srcRef, dstRef, c.SystemContext, rc.SystemContext); err != nil {
+			log.Error().Msgf("error syncing image %s:%s to registry %s: %s", image.Name, image.Tag, rc.Registry, err)
+		}
 	}
 
 	return nil
@@ -92,7 +116,7 @@ func parseDocker(registry, repository, imageName, tag string) (types.ImageRefere
 	return ref, nil
 }
 
-func copyImage(ctx context.Context, srcRef, dstRef types.ImageReference, sysCtx *types.SystemContext) error {
+func copyImage(ctx context.Context, srcRef, dstRef types.ImageReference, srcSysCtx *types.SystemContext, dstSysCtx *types.SystemContext) error {
 	policyCtx, err := signature.NewPolicyContext(&signature.Policy{
 		Default: []signature.PolicyRequirement{
 			signature.NewPRInsecureAcceptAnything(),
@@ -105,8 +129,8 @@ func copyImage(ctx context.Context, srcRef, dstRef types.ImageReference, sysCtx 
 	defer func() { _ = policyCtx.Destroy() }()
 
 	_, err = copy.Image(ctx, policyCtx, dstRef, srcRef, &copy.Options{
-		SourceCtx:      sysCtx,
-		DestinationCtx: sysCtx,
+		SourceCtx:      srcSysCtx,
+		DestinationCtx: dstSysCtx,
 	})
 
 	return err
