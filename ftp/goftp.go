@@ -11,7 +11,7 @@ import (
 
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/rs/zerolog/log"
-	"github.com/secsy/goftp"
+	"github.com/prasad83/goftp"
 )
 
 type GoFTP struct {

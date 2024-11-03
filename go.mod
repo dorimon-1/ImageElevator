@@ -6,8 +6,8 @@ require (
 	github.com/containers/image/v5 v5.31.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/joho/godotenv v1.5.1
+	github.com/prasad83/goftp v0.0.0-20210325080443-f57aaed46a32
 	github.com/rs/zerolog v1.33.0
-	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
 	github.com/stretchr/testify v1.9.0
 	github.com/ulikunitz/xz v0.5.12
 )
@@ -101,6 +101,7 @@ require (
 	github.com/proglottis/gpgme v0.1.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4 // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0 // indirect
 	github.com/sigstore/fulcio v1.4.5 // indirect
 	github.com/sigstore/rekor v1.3.6 // indirect
