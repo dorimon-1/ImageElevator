@@ -6,6 +6,7 @@ import (
 	"unicode"
 
 	"github.com/Kjone1/imageElevator/config"
+	"github.com/Kjone1/imageElevator/decompress"
 	"github.com/Kjone1/imageElevator/docker"
 	"github.com/Kjone1/imageElevator/ftp"
 	"github.com/rs/zerolog/log"
@@ -60,8 +61,8 @@ func (r *DockerElevator) uploadImages() (int, error) {
 	fails := 0
 	for i := 0; i < len(images); i++ {
 		if err := r.registryAdapter.PushTar(r.ctx, &images[i]); err != nil {
-			log.Error().Msgf("failed to push %s to registry => %s", images[i].TarPath, err)
-			fails--
+			log.Error().Msgf("failed to push %s to registry => %s", images[i].String(), err)
+			fails++
 			continue
 		}
 
@@ -88,6 +89,16 @@ func (r BaseElevator) pullFiles() ([]string, error) {
 	if err != nil {
 		log.Error().Msgf("Pulling files from FTP directory => %s", err)
 		return nil, err
+	}
+
+	for i, file := range localFiles {
+		decompressedFile, err := decompress.Decompress(file)
+		if err != nil {
+			log.Error().Msgf("failed to decompress %s => %s", file, err)
+			continue
+		}
+
+		localFiles[i] = decompressedFile
 	}
 
 	return localFiles, nil

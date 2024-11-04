@@ -3,6 +3,7 @@ package ftp
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -10,8 +11,8 @@ import (
 	"time"
 
 	"github.com/Kjone1/imageElevator/config"
-	"github.com/rs/zerolog/log"
 	"github.com/prasad83/goftp"
+	"github.com/rs/zerolog/log"
 )
 
 type GoFTP struct {
@@ -23,7 +24,7 @@ var ftpClient *GoFTP
 func Client() (*GoFTP, error) {
 	if ftpClient == nil {
 		config := config.FtpConfig()
-		goFTPClient, err := Connect(config.FtpServerURL, config.FtpUsername, config.FtpPassword)
+		goFTPClient, err := Connect(config.FtpServerURL, config.FtpUsername, config.FtpPassword, os.Stdout)
 		if err != nil {
 			return nil, err
 		}
@@ -36,13 +37,13 @@ func Client() (*GoFTP, error) {
 	return ftpClient, nil
 }
 
-func Connect(URL string, username string, password string) (*goftp.Client, error) {
+func Connect(URL string, username string, password string, logger io.Writer) (*goftp.Client, error) {
 	ftpConfig := goftp.Config{
 		User:               username,
 		Password:           password,
 		ConnectionsPerHost: 10,
 		Timeout:            10 * time.Second,
-		Logger:             nil,
+		Logger:             logger,
 	}
 
 	client, err := goftp.DialConfig(ftpConfig, URL)
