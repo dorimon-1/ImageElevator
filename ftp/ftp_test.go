@@ -13,7 +13,7 @@ var goFTP *GoFTP
 
 func setupClient(t *testing.T) *GoFTP {
 	if goFTP == nil {
-		ftpClient, err := Connect("localhost", "testuser", "testpassword")
+		ftpClient, err := Connect("localhost", "testuser", "testpassword", os.Stdout)
 		if err != nil {
 			t.Errorf("Failed With FTP client setup => %v", err)
 		}
