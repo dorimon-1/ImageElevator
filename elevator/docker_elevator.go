@@ -2,6 +2,7 @@ package elevator
 
 import (
 	"context"
+	"path/filepath"
 	"strings"
 	"unicode"
 
@@ -107,7 +108,8 @@ func (r BaseElevator) pullFiles() ([]string, error) {
 func tarsToImages(tarFiles []string) []docker.Image {
 	images := make([]docker.Image, len(tarFiles))
 	for i, file := range tarFiles {
-		trimmedFile := strings.TrimSuffix(file, ".tar")
+		trimmedFile := filepath.Base(file)
+		trimmedFile = strings.TrimSuffix(trimmedFile, ".tar")
 		trimmedFile = strings.TrimSuffix(trimmedFile, "-docker")
 		trimmedFile = strings.TrimPrefix(trimmedFile, "int-")
 		imageName, imageTag := splitTarFile(trimmedFile)

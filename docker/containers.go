@@ -18,16 +18,6 @@ type Container struct {
 	SyncRegistryConfigruation []config.RegistryConfiguration
 }
 
-type Image struct {
-	Name    string
-	Tag     string
-	TarPath string
-}
-
-func (i Image) String() string {
-	return fmt.Sprintf("%s:%s, %s", i.Name, i.Tag, i.TarPath)
-}
-
 func NewRegistry(config *config.RegistryConfiguration, syncConfig []config.RegistryConfiguration) RegistryAdapter {
 	return &Container{
 		RegistryConfiguration:     config,
