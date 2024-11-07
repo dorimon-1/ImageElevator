@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y \
 # RUN apk --no-cache add libgpgme btrfs-progs
 
 # Set the Current Working Directory inside the container
-WORKDIR /root/
+WORKDIR /app
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/image-elevator .

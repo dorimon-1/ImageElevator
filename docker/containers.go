@@ -56,15 +56,18 @@ func (c *Container) Pull(ctx context.Context, image, tag, targetPath string) err
 func (c *Container) PushTar(ctx context.Context, image *Image) error {
 	dstRef, err := parseDocker(c.Registry, c.Repository, image.Name, image.Tag)
 	if err != nil {
+		log.Error().Msgf("error parsing destination registry %s, repository %s, image %s:%s", c.Registry, c.Repository, image.Name, image.Tag)
 		return err
 	}
 
+	log.Info().Msgf("parsing image tar path: %s", image.TarPath)
 	srcRef, err := parseTar(image.TarPath)
 	if err != nil {
 		return err
 	}
-
+	log.Info().Msgf("Pushing %s/%s:%s at %s to %s", c.Repository, image.Name, image.Tag, image.TarPath, c.Registry)
 	if err := copyImage(ctx, srcRef, dstRef, c.SystemContext, c.SystemContext); err != nil {
+		log.Error().Msgf("error pushing image destination registry %s, repository %s, image %s:%s", c.Registry, c.Repository, image.Name, image.Tag)
 		return err
 	}
 
