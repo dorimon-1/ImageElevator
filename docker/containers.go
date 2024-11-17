@@ -41,7 +41,7 @@ func (c *Container) Pull(ctx context.Context, image, tag, targetPath string) err
 		return err
 	}
 
-	dstRef, err := parseTar(fmt.Sprintf("%s/%s-%s", targetPath, image, tag))
+	dstRef, err := parseTar(fmt.Sprintf("%s/%s-%s.tar", targetPath, image, tag))
 	if err != nil {
 		return err
 	}

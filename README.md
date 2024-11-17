@@ -19,22 +19,36 @@ ImageElevator is a service designed to pull tar images from an FTP server and pu
 
 2. Install dependencies:
     ```bash
-    go mod tidy
+    task setup
     ```
 
 3. Build the project:
     ```bash
-    go build -o image-elevator
+    task build
     ```
+- `Run Tests`
+  ```bash 
+  task test
+  ```
 
 ## Configuration
 
 ImageElevator can be configured using a configuration file or environment variables. The primary configuration settings include:
 
+- `REGISTRY`: The registry you wish to upload docker images to, for example: docker.io
+- `REPOSITORY`: The repository you wish to upload to the docker images inside the registry, for example grafana
+- `REPO_USERNAME`: The Username you are using to login to the registry
+- `REPO_PASSWORD`: The Password you are using to login to the registry
+- `DOCKER_CERT_PATH`: Path to a your docker certificate - Very Optional
+- `TAR_REGEX`: The regex that matches your images pattern, leaving this empty will try to upload every file in your ftp server.
+- `REGISTRY_BEARER_TOKEN`: An alternate, easier and more secure way to authenticate to your registry instead of using username and password.
+- `SYNC_REGISTRIES`: Registries you wish to sync the image with for example: "docker.io, openshift.co"
+- `SYNC_REGISTRIES_BEARER_TOKEN`: Bearer token for each registry
+- `SAMPLE_RATE_IN_MINUTES`: The rate of your samples.
 - `FTP_HOST`: The hostname of the FTP server.
+- `FTP_SERVER_PATH`: Working path inside the ftp server, default: "/"
 - `FTP_USER`: The FTP username.
 - `FTP_PASS`: The FTP password.
-- `DOCKER_REGISTRY`: The Docker registry URL where images will be pushed.
 - `LOG_LEVEL`: The logging level (e.g., `info`, `debug`, `error`).
 
 You can also customize other settings such as the file pattern to match tar files and the working directory for image extraction.
@@ -45,3 +59,4 @@ After configuring, you can start the service by running:
 
 ```bash
 ./image-elevator
+```
