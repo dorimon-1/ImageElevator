@@ -2,6 +2,7 @@ package docker_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
@@ -40,10 +41,10 @@ func TestPull(t *testing.T) {
 
 func TestPush(t *testing.T) {
 	ctx := context.Background()
-	tarPath := "/root/int-alpine-test-5.1.0.124-rc.9-docker.tar"
+	tarPath := fmt.Sprintf("../%s-%s", imageName, tag)
 	image := &docker.Image{
-		Name:    "alpine",
-		Tag:     "5.1.0.124-rc.9",
+		Name:    imageName,
+		Tag:     tag,
 		TarPath: tarPath,
 	}
 
