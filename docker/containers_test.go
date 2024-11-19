@@ -41,7 +41,7 @@ func TestPull(t *testing.T) {
 
 func TestPush(t *testing.T) {
 	ctx := context.Background()
-	tarPath := fmt.Sprintf("../%s-%s", imageName, tag)
+	tarPath := fmt.Sprintf("../%s-%s.tar", imageName, tag)
 	image := &docker.Image{
 		Name:    imageName,
 		Tag:     tag,
