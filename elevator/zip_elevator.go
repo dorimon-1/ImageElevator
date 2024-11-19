@@ -16,7 +16,7 @@ type ZipElevator struct {
 	destinationPath string
 }
 
-const ZIP_CACHE_FILE = "docker_elevator.json"
+const ZIP_CACHE_FILE = "zip_elevator.json"
 
 func NewZipElevator(ctx context.Context, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern, destPath string) *ZipElevator {
 	return &ZipElevator{

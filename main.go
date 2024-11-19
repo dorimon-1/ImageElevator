@@ -54,8 +54,12 @@ func main() {
 	}
 
 	dockerElevator := elevator.NewDockerElevator(ctx, registryAdapter, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.TarRegex)
+	zipElevator := elevator.NewZipElevator(ctx, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.ZipRegex, elevatorConfig.ZipDestinationPath)
 	handler := handler.NewHandler(dockerElevator)
 
+	if elevatorConfig.ZipDestinationPath != "" {
+		elevator.Start(zipElevator)
+	}
 	elevator.Start(dockerElevator)
 
 	httpServer := serveHttp(server, handler)

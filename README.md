@@ -45,10 +45,13 @@ ImageElevator can be configured using a configuration file or environment variab
 - `SYNC_REGISTRIES`: Registries you wish to sync the image with for example: "docker.io, openshift.co"
 - `SYNC_REGISTRIES_BEARER_TOKEN`: Bearer token for each registry
 - `SAMPLE_RATE_IN_MINUTES`: The rate of your samples.
+- `ZIP_REGEX`: The regex that matches your zip pattern, leaving this empty will try to upload every file in your ftp server.
+- `ZIP_DESTINATION_PATH`: The destination folder (should be a mount nas etc) the zip will be copied to, leaving this empty will disable zip elevator.
 - `FTP_HOST`: The hostname of the FTP server.
 - `FTP_SERVER_PATH`: Working path inside the ftp server, default: "/"
 - `FTP_USER`: The FTP username.
 - `FTP_PASS`: The FTP password.
+- `FTP_LOGGER_ENABLED`: Anything but "" to enable ftp logging
 - `LOG_LEVEL`: The logging level (e.g., `info`, `debug`, `error`).
 
 You can also customize other settings such as the file pattern to match tar files and the working directory for image extraction.

@@ -10,6 +10,8 @@ import (
 type ElevatorConfiguration struct {
 	SampleRateInMinutes time.Duration
 	TarRegex            string
+	ZipRegex            string
+	ZipDestinationPath  string
 }
 
 var elevatorConfig *ElevatorConfiguration
@@ -31,9 +33,13 @@ func readElevatorConfig() *ElevatorConfiguration {
 	}
 
 	tarRegex := ReadEnvWithDefault("TAR_REGEX", "")
+	zipRegex := ReadEnvWithDefault("ZIP_REGEX", "")
+	zipDestinationPath := ReadEnvWithDefault("ZIP_DESTINATION_PATH", "")
 
 	return &ElevatorConfiguration{
 		SampleRateInMinutes: time.Duration(sampleRate) * time.Minute,
 		TarRegex:            tarRegex,
+		ZipRegex:            zipRegex,
+		ZipDestinationPath:  zipDestinationPath,
 	}
 }
