@@ -81,7 +81,7 @@ func (c *Container) Sync(ctx context.Context, image *Image) error {
 	}
 
 	for _, rc := range c.SyncRegistryConfigruation {
-		dstRef, err := parseDocker(rc.Repository, rc.Repository, image.Name, image.Tag)
+		dstRef, err := parseDocker(rc.Registry, rc.Repository, image.Name, image.Tag)
 		if err != nil {
 			log.Error().Msgf("error parsing docker registry image %s:%s, registry %s: %s", image.Name, image.Tag, rc.Registry, err)
 			continue

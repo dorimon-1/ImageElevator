@@ -42,9 +42,10 @@ func readRegistryConfig() *RegistryConfiguration {
 		Repository: repo,
 		Registry:   registry,
 		SystemContext: &types.SystemContext{
-			DockerAuthConfig:          dockerAuthConfig,
-			DockerCertPath:            ReadEnvWithDefault("DOCKER_CERT_PATH", ""),
-			DockerBearerRegistryToken: ReadEnvWithDefault("REGISTRY_BEARER_TOKEN", ""),
+			DockerAuthConfig:            dockerAuthConfig,
+			DockerCertPath:              ReadEnvWithDefault("DOCKER_CERT_PATH", ""),
+			DockerBearerRegistryToken:   ReadEnvWithDefault("REGISTRY_BEARER_TOKEN", ""),
+			DockerInsecureSkipTLSVerify: types.OptionalBoolTrue,
 		},
 	}
 }

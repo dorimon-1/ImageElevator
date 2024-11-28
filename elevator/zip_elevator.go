@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/ftp"
@@ -40,7 +41,7 @@ func (r *ZipElevator) uploadImages() (int, error) {
 
 	go func(files []string) {
 		for i := range files {
-			r.uploadedFiles[files[i]] = true
+			r.uploadedFiles[filepath.Base(files[i])] = true
 		}
 		if err := saveCache(ZIP_CACHE_FILE, r.uploadedFiles); err != nil {
 			log.Error().Msgf("Error saving to cache: %s", err)

@@ -16,15 +16,23 @@ import (
 type DockerElevator struct {
 	BaseElevator
 	registryAdapter docker.RegistryAdapter
+	decompressor    decompress.Decompressor
 }
 
 const DOCKER_CACHE_FILE = "docker_elevator.json"
 
 func NewDockerElevator(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern string) *DockerElevator {
 	uploadedFiles := loadCache(DOCKER_CACHE_FILE)
+
+	var decompressor decompress.Decompressor = new(decompress.TarDecompressor)
+	if elevatorConfig.IsUsingXZ {
+		decompressor = new(decompress.XZDecompressor)
+	}
+
 	elevator := &DockerElevator{
 		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, uploadedFiles),
 		registryAdapter: registryAdapter,
+		decompressor:    decompressor,
 	}
 
 	return elevator
@@ -48,9 +56,11 @@ func (r *DockerElevator) uploadImages() (int, error) {
 		return 0, err
 	}
 
+	tarFiles = r.decompressFiles(tarFiles)
+
 	go func(files []string) {
 		for i := range files {
-			r.uploadedFiles[files[i]] = true
+			r.uploadedFiles[filepath.Base(files[i])] = true
 		}
 		if err := saveCache(DOCKER_CACHE_FILE, r.uploadedFiles); err != nil {
 			log.Error().Msgf("Error saving to cache: %s", err)
@@ -92,8 +102,12 @@ func (r BaseElevator) pullFiles() ([]string, error) {
 		return nil, err
 	}
 
+	return localFiles, nil
+}
+
+func (e DockerElevator) decompressFiles(localFiles []string) []string {
 	for i, file := range localFiles {
-		decompressedFile, err := decompress.Decompress(file)
+		decompressedFile, err := e.decompressor.Decompress(file)
 		if err != nil {
 			log.Error().Msgf("failed to decompress %s => %s", file, err)
 			continue
@@ -101,8 +115,7 @@ func (r BaseElevator) pullFiles() ([]string, error) {
 
 		localFiles[i] = decompressedFile
 	}
-
-	return localFiles, nil
+	return localFiles
 }
 
 func tarsToImages(tarFiles []string) []docker.Image {

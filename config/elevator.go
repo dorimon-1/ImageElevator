@@ -12,6 +12,7 @@ type ElevatorConfiguration struct {
 	TarRegex            string
 	ZipRegex            string
 	ZipDestinationPath  string
+	IsUsingXZ           bool
 }
 
 var elevatorConfig *ElevatorConfiguration
@@ -35,11 +36,14 @@ func readElevatorConfig() *ElevatorConfiguration {
 	tarRegex := ReadEnvWithDefault("TAR_REGEX", "")
 	zipRegex := ReadEnvWithDefault("ZIP_REGEX", "")
 	zipDestinationPath := ReadEnvWithDefault("ZIP_DESTINATION_PATH", "")
+	sIsXZ := ReadEnvWithDefault("IS_USING_XZ", "false")
+	isZX := sIsXZ == "true"
 
 	return &ElevatorConfiguration{
 		SampleRateInMinutes: time.Duration(sampleRate) * time.Minute,
 		TarRegex:            tarRegex,
 		ZipRegex:            zipRegex,
 		ZipDestinationPath:  zipDestinationPath,
+		IsUsingXZ:           isZX,
 	}
 }

@@ -47,7 +47,9 @@ func TestDecompress(t *testing.T) {
 	inputFile, cleanup := setupDecompress(t, testData)
 	defer cleanup()
 
-	decompressedFilePath, err := Decompress(inputFile)
+	decompressor := new(TarDecompressor)
+
+	decompressedFilePath, err := decompressor.Decompress(inputFile)
 	if err != nil {
 		t.Fatal("Decompression failed:", err)
 	}

@@ -133,5 +133,5 @@ func (f *GoFTP) List(path string, pattern string, bannedFiles map[string]bool) (
 }
 
 func isBanned(bannedFiles map[string]bool, file string) bool {
-	return bannedFiles[file]
+	return bannedFiles[filepath.Base(file)]
 }

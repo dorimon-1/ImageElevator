@@ -41,8 +41,10 @@ ImageElevator can be configured using a configuration file or environment variab
 - `REPO_PASSWORD`: The Password you are using to login to the registry
 - `DOCKER_CERT_PATH`: Path to a your docker certificate - Very Optional
 - `TAR_REGEX`: The regex that matches your images pattern, leaving this empty will try to upload every file in your ftp server.
+- `IS_USING_XZ`: If 'true' will decompress using xz binary instead of xz lib, recommended to use as xz lib is currently experinmental
 - `REGISTRY_BEARER_TOKEN`: An alternate, easier and more secure way to authenticate to your registry instead of using username and password.
 - `SYNC_REGISTRIES`: Registries you wish to sync the image with for example: "docker.io, openshift.co"
+- `SYNC_REPOSITORIES`: Reposities you wish to to push your image to, for example grafana
 - `SYNC_REGISTRIES_BEARER_TOKEN`: Bearer token for each registry
 - `SAMPLE_RATE_IN_MINUTES`: The rate of your samples.
 - `ZIP_REGEX`: The regex that matches your zip pattern, leaving this empty will try to upload every file in your ftp server.
