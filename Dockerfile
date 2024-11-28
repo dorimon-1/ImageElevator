@@ -38,6 +38,8 @@ COPY --from=builder /app/image-elevator .
 
 COPY --from=builder /app/.env .
 
+COPY /usr/bin/xz /usr/bin/
+
 # Command to run the executable
 CMD [ "./image-elevator" ]
 
