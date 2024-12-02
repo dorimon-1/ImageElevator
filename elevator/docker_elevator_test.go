@@ -17,7 +17,7 @@ func setupElevator() (*DockerElevator, *mocks.MockFTPClient, *mocks.MockRegistry
 		SampleRateInMinutes: 1,
 	}
 
-	elevator := NewDockerElevator(context.Background(), dockerRegistry, ftpClient, elevatorConfig, "", "")
+	elevator := NewDockerElevator(context.Background(), dockerRegistry, ftpClient, elevatorConfig, "", "", 5)
 	return elevator, ftpClient, dockerRegistry
 }
 

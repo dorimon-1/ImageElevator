@@ -53,13 +53,22 @@ func main() {
 		log.Fatal().Msgf("Failed to connect to FTP server => %s", err)
 	}
 
-	dockerElevator := elevator.NewDockerElevator(ctx, registryAdapter, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.TarRegex)
+	baseElevator := elevator.NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, ftpConfig.FtpServerPath, elevatorConfig.TarRegex, nil, elevatorConfig.MaxUploadsPerRun)
+
+	var dockerElevator elevator.Elevator
+	if elevatorConfig.IsConcurrentDocker {
+		elevator.NewConcurrentDockerElevator(ctx, registryAdapter, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.TarRegex, elevatorConfig.MaxUploadsPerRun)
+	} else {
+		dockerElevator = elevator.NewDockerElevator(ctx, registryAdapter, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.TarRegex)
+	}
+
 	zipElevator := elevator.NewZipElevator(ctx, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.ZipRegex, elevatorConfig.ZipDestinationPath)
 	handler := handler.NewHandler(dockerElevator)
 
 	if elevatorConfig.ZipDestinationPath != "" {
 		elevator.Start(zipElevator)
 	}
+
 	elevator.Start(dockerElevator)
 
 	httpServer := serveHttp(server, handler)

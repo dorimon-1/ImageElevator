@@ -19,9 +19,9 @@ type ZipElevator struct {
 
 const ZIP_CACHE_FILE = "zip_elevator.json"
 
-func NewZipElevator(ctx context.Context, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern, destPath string) *ZipElevator {
+func NewZipElevator(ctx context.Context, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern, destPath string, maxUploadsPerRun int) *ZipElevator {
 	return &ZipElevator{
-		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, loadCache(ZIP_CACHE_FILE)),
+		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, loadCache(ZIP_CACHE_FILE), maxUploadsPerRun),
 		destinationPath: destPath,
 	}
 }

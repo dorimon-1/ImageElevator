@@ -12,28 +12,30 @@ import (
 )
 
 type BaseElevator struct {
-	ctx            context.Context
-	sampleRate     time.Duration
-	ftpClient      ftp.FTPClient
-	timer          *time.Timer
-	runUploadChan  chan any
-	resetTimerChan chan any
-	workingPath    string
-	filePattern    string
-	uploadedFiles  map[string]bool
+	ctx              context.Context
+	sampleRate       time.Duration
+	ftpClient        ftp.FTPClient
+	timer            *time.Timer
+	runUploadChan    chan any
+	resetTimerChan   chan any
+	workingPath      string
+	filePattern      string
+	uploadedFiles    map[string]bool
+	maxUploadsPerRun int
 }
 
-func NewBaseElevator(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string, uploadedFiles map[string]bool) BaseElevator {
+func NewBaseElevator(sampleRate time.Duration, ftpClient ftp.FTPClient, workingPath, filePattern string, uploadedFiles map[string]bool, maxUploadsPerRun int) BaseElevator {
 	return BaseElevator{
-		ctx:            context.Background(),
-		sampleRate:     sampleRate,
-		ftpClient:      ftpClient,
-		timer:          time.NewTimer(sampleRate),
-		runUploadChan:  make(chan any, 1),
-		resetTimerChan: make(chan any),
-		workingPath:    workingPath,
-		filePattern:    filePattern,
-		uploadedFiles:  make(map[string]bool),
+		ctx:              context.Background(),
+		sampleRate:       sampleRate,
+		ftpClient:        ftpClient,
+		timer:            time.NewTimer(sampleRate),
+		runUploadChan:    make(chan any, 1),
+		resetTimerChan:   make(chan any),
+		workingPath:      workingPath,
+		filePattern:      filePattern,
+		uploadedFiles:    make(map[string]bool),
+		maxUploadsPerRun: maxUploadsPerRun,
 	}
 }
 

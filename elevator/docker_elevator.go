@@ -21,7 +21,7 @@ type DockerElevator struct {
 
 const DOCKER_CACHE_FILE = "docker_elevator.json"
 
-func NewDockerElevator(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern string) *DockerElevator {
+func NewDockerElevator(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern string, maxUploadsPerRun int) *DockerElevator {
 	uploadedFiles := loadCache(DOCKER_CACHE_FILE)
 
 	var decompressor decompress.Decompressor = new(decompress.TarDecompressor)
@@ -30,7 +30,7 @@ func NewDockerElevator(ctx context.Context, registryAdapter docker.RegistryAdapt
 	}
 
 	elevator := &DockerElevator{
-		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, uploadedFiles),
+		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, uploadedFiles, maxUploadsPerRun),
 		registryAdapter: registryAdapter,
 		decompressor:    decompressor,
 	}
@@ -121,19 +121,22 @@ func (e DockerElevator) decompressFiles(localFiles []string) []string {
 func tarsToImages(tarFiles []string) []docker.Image {
 	images := make([]docker.Image, len(tarFiles))
 	for i, file := range tarFiles {
-		trimmedFile := filepath.Base(file)
-		trimmedFile = strings.TrimSuffix(trimmedFile, ".tar")
-		trimmedFile = strings.TrimSuffix(trimmedFile, "-docker")
-		trimmedFile = strings.TrimPrefix(trimmedFile, "int-")
-		imageName, imageTag := splitTarFile(trimmedFile)
-		image := docker.Image{
-			Name:    imageName,
-			Tag:     imageTag,
-			TarPath: file,
-		}
-		images[i] = image
+		images[i] = *tarToImage(file)
 	}
 	return images
+}
+
+func tarToImage(file string) *docker.Image {
+	trimmedFile := filepath.Base(file)
+	trimmedFile = strings.TrimSuffix(trimmedFile, ".tar")
+	trimmedFile = strings.TrimSuffix(trimmedFile, "-docker")
+	trimmedFile = strings.TrimPrefix(trimmedFile, "int-")
+	imageName, imageTag := splitTarFile(trimmedFile)
+	return &docker.Image{
+		Name:    imageName,
+		Tag:     imageTag,
+		TarPath: file,
+	}
 }
 
 func splitTarFile(s string) (string, string) {

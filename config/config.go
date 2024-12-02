@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
@@ -21,6 +22,16 @@ func LoadConfig() {
 	FtpConfig()
 	RegistryConfig()
 	ElevatorConfig()
+}
+
+func ReadIntEnv(key string, defaultValue int) int {
+	val, err := strconv.Atoi(ReadEnvWithDefault(key, strconv.Itoa(defaultValue)))
+	if err != nil {
+		log.Warn().Msgf("Error formatting %s to int => %s", key, err)
+		return defaultValue
+	}
+
+	return val
 }
 
 func ReadEnvWithDefault(key string, defaultValue string) string {

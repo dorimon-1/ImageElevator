@@ -13,6 +13,8 @@ type ElevatorConfiguration struct {
 	ZipRegex            string
 	ZipDestinationPath  string
 	IsUsingXZ           bool
+	IsConcurrentDocker  bool
+	MaxUploadsPerRun    int
 }
 
 var elevatorConfig *ElevatorConfiguration
@@ -36,14 +38,17 @@ func readElevatorConfig() *ElevatorConfiguration {
 	tarRegex := ReadEnvWithDefault("TAR_REGEX", "")
 	zipRegex := ReadEnvWithDefault("ZIP_REGEX", "")
 	zipDestinationPath := ReadEnvWithDefault("ZIP_DESTINATION_PATH", "")
-	sIsXZ := ReadEnvWithDefault("IS_USING_XZ", "false")
-	isZX := sIsXZ == "true"
+	isXZ := (ReadEnvWithDefault("IS_USING_XZ", "false") == "true")
+	isConcurrentDocker := (ReadEnvWithDefault("IS_CONCURRENT_DOCKER", "false") == "true")
+	maxUploadsPerRun := ReadIntEnv("MAX_UPLOADS_PER_RUN", 10)
 
 	return &ElevatorConfiguration{
 		SampleRateInMinutes: time.Duration(sampleRate) * time.Minute,
 		TarRegex:            tarRegex,
 		ZipRegex:            zipRegex,
 		ZipDestinationPath:  zipDestinationPath,
-		IsUsingXZ:           isZX,
+		IsUsingXZ:           isXZ,
+		IsConcurrentDocker:  isConcurrentDocker,
+		MaxUploadsPerRun:    maxUploadsPerRun,
 	}
 }
