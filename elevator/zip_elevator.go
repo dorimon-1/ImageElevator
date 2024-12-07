@@ -2,14 +2,11 @@ package elevator
 
 import (
 	"context"
+	"github.com/rs/zerolog/log"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
-
-	"github.com/Kjone1/imageElevator/config"
-	"github.com/Kjone1/imageElevator/ftp"
-	"github.com/rs/zerolog/log"
 )
 
 type ZipElevator struct {
@@ -19,9 +16,9 @@ type ZipElevator struct {
 
 const ZIP_CACHE_FILE = "zip_elevator.json"
 
-func NewZipElevator(ctx context.Context, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern, destPath string, maxUploadsPerRun int) *ZipElevator {
+func NewZipElevator(ctx context.Context, destPath string, baseElevator BaseElevator) *ZipElevator {
 	return &ZipElevator{
-		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, loadCache(ZIP_CACHE_FILE), maxUploadsPerRun),
+		BaseElevator:    baseElevator,
 		destinationPath: destPath,
 	}
 }

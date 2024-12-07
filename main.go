@@ -57,12 +57,12 @@ func main() {
 
 	var dockerElevator elevator.Elevator
 	if elevatorConfig.IsConcurrentDocker {
-		elevator.NewConcurrentDockerElevator(ctx, registryAdapter, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.TarRegex, elevatorConfig.MaxUploadsPerRun)
+		dockerElevator = elevator.NewConcurrentDockerElevator(ctx, baseElevator, registryAdapter, &elevatorConfig)
 	} else {
-		dockerElevator = elevator.NewDockerElevator(ctx, registryAdapter, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.TarRegex)
+		dockerElevator = elevator.NewDockerElevator(ctx, baseElevator, registryAdapter, &elevatorConfig)
 	}
 
-	zipElevator := elevator.NewZipElevator(ctx, ftpClient, &elevatorConfig, ftpConfig.FtpServerPath, elevatorConfig.ZipRegex, elevatorConfig.ZipDestinationPath)
+	zipElevator := elevator.NewZipElevator(ctx, elevatorConfig.ZipDestinationPath, baseElevator)
 	handler := handler.NewHandler(dockerElevator)
 
 	if elevatorConfig.ZipDestinationPath != "" {

@@ -2,6 +2,7 @@ package elevator
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 
 	"github.com/Kjone1/imageElevator/config"
@@ -34,11 +35,11 @@ func NewConcurrentDockerElevator(ctx context.Context, baseElevator BaseElevator,
 	return elevator
 }
 
-func (r ConcurrentDockerElevator) baseElevator() *BaseElevator {
+func (r *ConcurrentDockerElevator) baseElevator() *BaseElevator {
 	return &r.BaseElevator
 }
 
-func (r ConcurrentDockerElevator) Stop() error {
+func (r *ConcurrentDockerElevator) Stop() error {
 	if err := r.ftpClient.Close(); err != nil {
 		log.Error().Msgf("Failed to close connection => %s", err)
 		return err
@@ -46,7 +47,7 @@ func (r ConcurrentDockerElevator) Stop() error {
 	return nil
 }
 
-func (r ConcurrentDockerElevator) uploadImages() (int, error) {
+func (r *ConcurrentDockerElevator) uploadImages() (int, error) {
 	files, err := r.pullFiles()
 	if err != nil {
 		return 0, err
@@ -82,14 +83,18 @@ func (r ConcurrentDockerElevator) uploadImages() (int, error) {
 	return uploads, nil
 }
 
-func (r ConcurrentDockerElevator) uploadFile(file string) (string, error) {
-	file, err := r.decompressor.Decompress(file)
+func (r *ConcurrentDockerElevator) uploadFile(file string) (string, error) {
+	decompressedFile, err := r.decompressor.Decompress(file)
 	if err != nil {
 		log.Error().Msgf("failed to decompress file %s => %s", file, err)
 		return "", err
 	}
 
-	image := tarToImage(file)
+	if err := os.Remove(file); err != nil {
+		log.Error().Msgf("failed to remove file %s => %s", file, err)
+	}
+
+	image := tarToImage(decompressedFile)
 
 	if err := r.registryAdapter.PushTar(r.ctx, image); err != nil {
 		log.Error().Msgf("failed to push %s to registry => %s", image.String(), err)
@@ -100,5 +105,9 @@ func (r ConcurrentDockerElevator) uploadFile(file string) (string, error) {
 		log.Error().Msgf("failed to sync %s:%s => %s", image.Name, image.Tag, err)
 	}
 
-	return filepath.Base(image.Name), nil
+	if err := os.Remove(decompressedFile); err != nil {
+		log.Error().Msgf("failed to remove file %s => %s", file, err)
+	}
+
+	return filepath.Base(file), nil
 }

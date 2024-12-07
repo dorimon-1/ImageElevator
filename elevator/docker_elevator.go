@@ -9,7 +9,6 @@ import (
 	"github.com/Kjone1/imageElevator/config"
 	"github.com/Kjone1/imageElevator/decompress"
 	"github.com/Kjone1/imageElevator/docker"
-	"github.com/Kjone1/imageElevator/ftp"
 	"github.com/rs/zerolog/log"
 )
 
@@ -21,8 +20,9 @@ type DockerElevator struct {
 
 const DOCKER_CACHE_FILE = "docker_elevator.json"
 
-func NewDockerElevator(ctx context.Context, registryAdapter docker.RegistryAdapter, ftpClient ftp.FTPClient, elevatorConfig *config.ElevatorConfiguration, workingPath, filePattern string, maxUploadsPerRun int) *DockerElevator {
+func NewDockerElevator(ctx context.Context, baseElevator BaseElevator, registryAdapter docker.RegistryAdapter, elevatorConfig *config.ElevatorConfiguration) *DockerElevator {
 	uploadedFiles := loadCache(DOCKER_CACHE_FILE)
+	baseElevator.uploadedFiles = uploadedFiles
 
 	var decompressor decompress.Decompressor = new(decompress.TarDecompressor)
 	if elevatorConfig.IsUsingXZ {
@@ -30,7 +30,7 @@ func NewDockerElevator(ctx context.Context, registryAdapter docker.RegistryAdapt
 	}
 
 	elevator := &DockerElevator{
-		BaseElevator:    NewBaseElevator(elevatorConfig.SampleRateInMinutes, ftpClient, workingPath, filePattern, uploadedFiles, maxUploadsPerRun),
+		BaseElevator:    baseElevator,
 		registryAdapter: registryAdapter,
 		decompressor:    decompressor,
 	}
